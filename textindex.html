@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta property="og:title" content="Life Insurance Policy Comparison" />
+  <meta property="og:description" content="Interactive comparison of life insurance policies showing death benefits, cash values, and total outlays." />
+  <meta property="og:image" content="https://placehold.co/1200x630/234990/FFFFFF?text=Insurance+Policy+Comparison" />
+  <title>Life Insurance Policy Comparison</title>
+
+  <!-- External libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+  <!-- Roboto font used on-page (PDF will be captured via html2canvas so font fidelity is preserved if the font loads) -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Basic reset / typography */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-print-color-adjust: exact; }
+    html, body { margin: 0; padding: 0; font-family: 'Roboto', sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
+    h1, h2, h3, h4, h5, h6 { color: #234990; margin-top: 0; }
+
+    /* Layout grid */
+    .container { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; width: 100%; max-width: 1600px; margin: 0 auto; padding: 20px; }
+    .left-panel, .right-panel { background-color: #fff; border-radius: 10px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); padding: 25px; }
+    .left-panel { display: flex; flex-direction: column; gap: 20px; }
+    .right-panel { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Forms */
+    .form-section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .form-section:last-child { border-bottom: none; margin-bottom: 0; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: 500; margin-bottom: 5px; color: #234990; }
+    input, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: inherit; font-size: 16px; }
+    input:focus { border-color: #234990; outline: none; box-shadow: 0 0 0 2px rgba(35, 73, 144, 0.2); }
+    input[type="number"] { text-align: right; }
+
+    /* Buttons */
+    button { background-color: #234990; color: white; border: none; cursor: pointer; font-weight: 500; transition: background-color 0.2s; margin-top: 10px; }
+    button:hover { background-color: #1a3670; }
+    button.secondary { background-color: #6c757d; }
+    button.secondary:hover { background-color: #5a6268; }
+    button.danger { background-color: #A80000; }
+    button.danger:hover { background-color: #8a0000; }
+    button.success { background-color: #326633; }
+    button.success:hover { background-color: #264d26; }
+
+    /* Policy block */
+    .policy-entry { border: 1px solid #eee; border-radius: 5px; padding: 15px; margin-bottom: 15px; background-color: #f9f9f9; }
+    .policy-entry .form-group { display: grid; grid-template-columns: 1fr; gap: 5px; }
+    .policy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .policy-header h3 { margin: 0; font-size: 18px; }
+    .remove-policy { background-color: transparent; color: #A80000; width: auto; padding: 5px 10px; margin: 0; }
+
+    /* Chart and summary */
+    .chart-container { position: relative; height: 400px; margin-bottom: 20px; }
+    .summary { background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; border-left: 5px solid #234990; color: #333; }
+    .summary p { margin: 0; white-space: pre-wrap; } /* preserve line breaks visually */
+
+    .footer-buttons { display: flex; gap: 10px; margin-top: auto; }
+    .footer-buttons button { flex: 1; }
+
+    /* Currency prefix for number inputs */
+    .currency-prefix { position: relative; }
+    .currency-prefix input { padding-left: 25px; }
+    .currency-prefix::before { content: "$"; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #666; z-index: 1; }
+
+    @media (max-width: 992px) { .container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <!-- Main layout: left = inputs, right = visualization -->
+  <div class="container">
+    <div class="left-panel">
+      <div class="form-section">
+        <h2>Prospect Information</h2>
+        <div class="form-group">
+          <label for="prospectName">Prospect Name</label>
+          <!-- template placeholder retained -->
+          <input type="text" id="prospectName" value="{{parsedData.prospect.name}}">
+        </div>
+        <div class="form-group">
+          <label for="comparisonAge">Comparison Age</label>
+          <input type="text" id="comparisonAge" value="{{parsedData.prospect.comparisonAge}}">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Policy Information</h2>
+        <div id="policiesContainer">
+          <!-- Policy entries inserted here by JS -->
+        </div>
+        <button id="addPolicy" class="success">+ Add Policy</button>
+      </div>
+
+      <button id="updateChart">Update Comparison</button>
+    </div>
+
+    <div class="right-panel">
+      <h1>Life Insurance Policy Comparison</h1>
+
+      <div class="chart-container">
+        <canvas id="policyChart"></canvas>
+      </div>
+
+      <!-- Summary element: innerHTML will be captured for PDF so bold/line breaks are preserved -->
+      <div class="summary" id="summary"> {{summaryText}} </div>
+
+      <div class="footer-buttons">
+        <button id="exportPDF">Export as PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /************************************************************************
+     * Life Insurance Comparison App
+     * - Chart rendering via Chart.js
+     * - Dynamic policy forms
+     * - PDF export via jsPDF + html2canvas
+     *
+     * Notes:
+     * - Template placeholders are preserved for server-side rendering.
+     * - The export uses html2canvas to capture both the chart and a temporary
+     *   summary element so the PDF summary visually matches the webpage.
+     ************************************************************************/
+
+    // Access jsPDF from the global window provided by the script include
+    const { jsPDF } = window.jspdf;
+
+    // Currency formatter for on-screen and PDF numeric data
+    const formatCurrency = (value) => {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+    };
+
+    // ---------------------------------------------------------------------
+    // Data placeholders (injected by server-side templates)
+    // ---------------------------------------------------------------------
+    let chartData = {json, chartData}; // e.g. { labels: [...], datasets: [...] }
+    const parsedData = {json, parsedData}; // e.g. parsedData.prospect, parsedData.policies
+
+    // ---------------------------------------------------------------------
+    // UI helpers: create and manage policy input blocks
+    // ---------------------------------------------------------------------
+    const createPolicyEntry = (policyName = '', deathBenefit = 0, cashValue = 0, totalOutlay = 0, index) => {
+      const policyDiv = document.createElement('div');
+      policyDiv.className = 'policy-entry';
+      policyDiv.dataset.index = index;
+
+      // Header with title and remove button
+      const policyHeader = document.createElement('div');
+      policyHeader.className = 'policy-header';
+      const policyTitle = document.createElement('h3');
+      policyTitle.textContent = `Policy ${index + 1}`;
+      const removeButton = document.createElement('button');
+      removeButton.className = 'remove-policy';
+      removeButton.textContent = '×';
+      removeButton.addEventListener('click', () => {
+        policyDiv.remove();
+        updatePolicyNumbers();
+      });
+
+      policyHeader.appendChild(policyTitle);
+      policyHeader.appendChild(removeButton);
+      policyDiv.appendChild(policyHeader);
+
+      // Fields: name, deathBenefit, cashValue, totalOutlay
+      const fields = [
+        { id: 'policyName', label: 'Policy Name', type: 'text', value: policyName },
+        { id: 'deathBenefit', label: 'Death Benefit', type: 'number', value: deathBenefit, currency: true },
+        { id: 'cashValue', label: 'Cash Value', type: 'number', value: cashValue, currency: true },
+        { id: 'totalOutlay', label: 'Total Outlay', type: 'number', value: totalOutlay, currency: true }
+      ];
+
+      fields.forEach(field => {
+        const formGroup = document.createElement('div');
+        formGroup.className = 'form-group';
+
+        const label = document.createElement('label');
+        label.setAttribute('for', `${field.id}_${index}`);
+        label.textContent = field.label;
+
+        const inputWrapper = document.createElement('div');
+        if (field.currency) inputWrapper.className = 'currency-prefix';
+
+        const input = document.createElement('input');
+        input.setAttribute('type', field.type);
+        input.setAttribute('id', `${field.id}_${index}`);
+        input.setAttribute('name', `${field.id}_${index}`);
+        input.value = field.value;
+        if (field.currency) {
+          input.setAttribute('min', '0');
+          input.setAttribute('step', '1000');
+        }
+
+        inputWrapper.appendChild(input);
+        formGroup.appendChild(label);
+        formGroup.appendChild(inputWrapper);
+        policyDiv.appendChild(formGroup);
+      });
+
+      return policyDiv;
+    };
+
+    // Re-index policy titles and input IDs after a deletion
+    const updatePolicyNumbers = () => {
+      const policyEntries = document.querySelectorAll('.policy-entry');
+      policyEntries.forEach((entry, index) => {
+        entry.dataset.index = index;
+        const title = entry.querySelector('h3');
+        title.textContent = `Policy ${index + 1}`;
+
+        const labels = entry.querySelectorAll('label');
+        const inputs = entry.querySelectorAll('input');
+
+        labels.forEach(label => {
+          const forAttr = label.getAttribute('for');
+          const baseId = forAttr.split('_')[0];
+          label.setAttribute('for', `${baseId}_${index}`);
+        });
+
+        inputs.forEach(input => {
+          const id = input.getAttribute('id');
+          const baseId = id.split('_')[0];
+          input.setAttribute('id', `${baseId}_${index}`);
+          input.setAttribute('name', `${baseId}_${index}`);
+        });
+      });
+    };
+
+    // ---------------------------------------------------------------------
+    // Chart setup and rendering
+    // ---------------------------------------------------------------------
+    let policyChart = null;
+    const initChart = () => {
+      const ctx = document.getElementById('policyChart').getContext('2d');
+      if (policyChart) policyChart.destroy();
+
+      policyChart = new Chart(ctx, {
+        type: 'bar',
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) { return formatCurrency(value); }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) label += ': ';
+                  label += formatCurrency(context.raw);
+                  return label;
+                }
+              }
+            },
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    };
+
+    // Read data from the form, validate, and update chartData then redraw chart
+    const updateChart = () => {
+      const policyEntries = document.querySelectorAll('.policy-entry');
+      if (policyEntries.length === 0) {
+        alert('Please add at least one policy to compare.');
+        return;
+      }
+
+      const prospectName = document.getElementById('prospectName').value.trim();
+      const comparisonAge = document.getElementById('comparisonAge').value.trim();
+      if (!prospectName || !comparisonAge) {
+        alert('Please enter prospect name and comparison age.');
+        return;
+      }
+
+      const names = [];
+      const deathBenefits = [];
+      const cashValues = [];
+      const totalOutlays = [];
+
+      for (let index = 0; index < policyEntries.length; index++) {
+        const policyNameEl = document.getElementById(`policyName_${index}`);
+        const deathBenefitEl = document.getElementById(`deathBenefit_${index}`);
+        const cashValueEl = document.getElementById(`cashValue_${index}`);
+        const totalOutlayEl = document.getElementById(`totalOutlay_${index}`);
+
+        if (!policyNameEl) {
+          alert(`Missing inputs for Policy ${index + 1}.`);
+          return;
+        }
+
+        const policyName = policyNameEl.value.trim();
+        const deathBenefit = Number(deathBenefitEl.value) || 0;
+        const cashValue = Number(cashValueEl.value) || 0;
+        const totalOutlay = Number(totalOutlayEl.value) || 0;
+
+        if (!policyName) {
+          alert(`Please enter a name for Policy ${index + 1}.`);
+          return;
+        }
+
+        names.push(policyName);
+        deathBenefits.push(deathBenefit);
+        cashValues.push(cashValue);
+        totalOutlays.push(totalOutlay);
+      }
+
+      // Build the chartData object used by Chart.js
+      chartData = {
+        labels: names,
+        datasets: [
+          { label: 'Death Benefit', data: deathBenefits, backgroundColor: '#234990', borderColor: '#234990', borderWidth: 1 },
+          { label: 'Cash Value', data: cashValues, backgroundColor: '#326633', borderColor: '#326633', borderWidth: 1 },
+          { label: 'Total Outlay', data: totalOutlays, backgroundColor: '#A80000', borderColor: '#A80000', borderWidth: 1 }
+        ]
+      };
+
+      // Update summary text on page using the user input (this contains the content that will be exported)
+      const summaryElement = document.getElementById('summary');
+      summaryElement.innerHTML = `This chart compares life insurance policies for <strong>${prospectName}</strong> (age ${comparisonAge}). Each policy's death benefit, cash value, and total outlay are shown to help evaluate efficiency and value.`;
+
+      // Re-initialize chart
+      initChart();
+    };
+
+    // ---------------------------------------------------------------------
+    // PDF export
+    // - Captures the chart canvas (as image)
+    // - Captures a temporary DOM summary element (styled identically) with html2canvas
+    // - Then draws the policy table (with proper wrapping)
+    // ---------------------------------------------------------------------
+    const exportToPDF = async () => {
+      // Basic meta & layout values
+      const prospectName = document.getElementById('prospectName').value.trim() || 'Client';
+      const now = new Date();
+      const timestamp = now.toLocaleString();
+
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 30;
+      const usableWidth = pageWidth - margin * 2;
+
+      // Keep metadata for later editing (per your request)
+      pdf.setProperties({
+        title: `Insurance Policy Comparison for ${prospectName}`,
+        subject: 'Life Insurance Policy Comparison',
+        author: 'Life Insurance Illustration Processor',
+        creator: 'Life Insurance Illustration Processor'
+      });
+
+      // Title (centered)
+      const title = `Insurance Policy Comparison for ${prospectName}`;
+      pdf.setFontSize(18);
+      pdf.setTextColor(35, 73, 144);
+      const titleWidth = pdf.getStringUnitWidth(title) * 18 / pdf.internal.scaleFactor;
+      const titleX = (pageWidth - titleWidth) / 2;
+      pdf.text(title, titleX, 40);
+
+      // Timestamp
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Generated: ${timestamp}`, margin, 60);
+
+      // 1) Capture chart as image using html2canvas
+      // Chart is inside a container; we capture the container to include canvas sizing/padding
+      const chartContainer = document.getElementById('policyChart').parentNode;
+      const chartCanvas = await html2canvas(chartContainer, { scale: 2 }); // higher scale for better resolution
+      const chartImgData = chartCanvas.toDataURL('image/png');
+
+      const chartImgWidth = usableWidth;
+      const chartImgHeight = (chartCanvas.height * chartImgWidth) / chartCanvas.width;
+      const chartTop = 80;
+
+      pdf.addImage(chartImgData, 'PNG', margin, chartTop, chartImgWidth, chartImgHeight);
+
+      // 2) Capture the summary box by creating a temporary element that matches .summary styling,
+      //    inserting the summary.innerHTML into it, and using html2canvas to rasterize it.
+      //    This preserves bold text, line breaks, and exact styling.
+
+      // Create temp summary element off-screen
+      const originalSummary = document.getElementById('summary');
+      const tempDiv = document.createElement('div');
+
+      // Inline styles to match on-screen .summary visually
+      // (we keep them inline to ensure html2canvas renders them correctly independent of overall document)
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px'; // hide off-screen
+      tempDiv.style.top = '0';
+      tempDiv.style.width = `${usableWidth}px`;
+      tempDiv.style.background = '#f8f9fa';
+      tempDiv.style.borderLeft = '5px solid #234990';
+      tempDiv.style.padding = '20px';
+      tempDiv.style.borderRadius = '5px';
+      tempDiv.style.color = '#333';
+      tempDiv.style.fontFamily = "Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+      tempDiv.style.fontSize = '12px';
+      tempDiv.style.lineHeight = '1.6';
+      tempDiv.style.boxSizing = 'border-box';
+      tempDiv.innerHTML = originalSummary.innerHTML || '';
+
+      document.body.appendChild(tempDiv);
+
+      // Render the summary tempDiv to canvas
+      const summaryCanvas = await html2canvas(tempDiv, { scale: 2, backgroundColor: null });
+      // Remove the temporary element from DOM
+      document.body.removeChild(tempDiv);
+
+      const summaryImgData = summaryCanvas.toDataURL('image/png');
+      const summaryImgWidth = usableWidth;
+      const summaryImgHeight = (summaryCanvas.height * summaryImgWidth) / summaryCanvas.width;
+      const summaryTop = chartTop + chartImgHeight + 10;
+
+      pdf.addImage(summaryImgData, 'PNG', margin, summaryTop, summaryImgWidth, summaryImgHeight);
+
+      // 3) Draw the policy table below the summary image.
+      // We compute table start Y using the height of the chart + summary images.
+      let tableY = summaryTop + summaryImgHeight + 20;
+
+      // Column layout: Policy name wider (wraps), others equally distributed
+      const colPolicyWidth = usableWidth * 0.45;
+      const colOtherWidth = (usableWidth - colPolicyWidth) / 3;
+      const headerHeight = 26;
+
+      // Helper to draw the header (we will re-draw when new page is added)
+      const drawTableHeader = (y) => {
+        pdf.setFillColor(240, 240, 240);
+        pdf.rect(margin, y, usableWidth, headerHeight, 'F');
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont('Helvetica', 'bold');
+        const paddingLeft = 8;
+        pdf.text('Policy', margin + paddingLeft, y + 17);
+        pdf.text('Death Benefit', margin + colPolicyWidth + paddingLeft, y + 17);
+        pdf.text('Cash Value', margin + colPolicyWidth + colOtherWidth + paddingLeft, y + 17);
+        pdf.text('Total Outlay', margin + colPolicyWidth + colOtherWidth * 2 + paddingLeft, y + 17);
+      };
+
+      // Draw initial header
+      drawTableHeader(tableY);
+      tableY += headerHeight + 10;
+
+      // Get labels and datasets from chartData safely
+      const labels = (chartData && chartData.labels) ? chartData.labels : [];
+      const ds0 = (chartData && chartData.datasets && chartData.datasets[0] && chartData.datasets[0].data) ? chartData.datasets[0].data : [];
+      const ds1 = (chartData && chartData.datasets && chartData.datasets[1] && chartData.datasets[1].data) ? chartData.datasets[1].data : [];
+      const ds2 = (chartData && chartData.datasets && chartData.datasets[2] && chartData.datasets[2].data) ? chartData.datasets[2].data : [];
+
+      // Row drawing - handle wrapping for policy names and page breaks
+      let currentY = tableY;
+      const bottomLimit = pageHeight - 40; // leave room for page bottom
+      const paddingLeft = 8;
+
+      pdf.setFont('Helvetica', 'normal');
+
+      for (let i = 0; i < labels.length; i++) {
+        const policyName = labels[i] || '';
+        const death = ds0[i] || 0;
+        const cash = ds1[i] || 0;
+        const outlay = ds2[i] || 0;
+
+        // Wrap policy name inside its column using splitTextToSize
+        const nameLines = pdf.splitTextToSize(policyName, colPolicyWidth - paddingLeft * 2);
+        // Calculate row height from number of lines
+        const rowHeight = Math.max(24, (nameLines.length * 14) + 10);
+
+        // If adding this row would overflow the page, add a new page and redraw header
+        if (currentY + rowHeight > bottomLimit) {
+          pdf.addPage();
+          // Optional: re-draw small title on top of page for context
+          pdf.setFontSize(12);
+          pdf.setTextColor(35, 73, 144);
+          pdf.text(title, margin, 30);
+          // Draw header at top area
+          currentY = 50;
+          drawTableHeader(currentY);
+          currentY += headerHeight + 10;
+        }
+
+        // Alternate row background for readability
+        if (i % 2 === 0) {
+          pdf.setFillColor(250, 250, 250);
+          pdf.rect(margin, currentY - 6, usableWidth, rowHeight, 'F');
+        }
+
+        // Draw policy name lines (left column)
+        pdf.setFont('Helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(nameLines, margin + paddingLeft, currentY + 12);
+
+        // Vertically center numeric values in the row
+        const numericBaseline = currentY + (rowHeight / 2) + 6;
+        pdf.text(formatCurrency(death), margin + colPolicyWidth + paddingLeft, numericBaseline);
+        pdf.text(formatCurrency(cash), margin + colPolicyWidth + colOtherWidth + paddingLeft, numericBaseline);
+        pdf.text(formatCurrency(outlay), margin + colPolicyWidth + colOtherWidth * 2 + paddingLeft, numericBaseline);
+
+        currentY += rowHeight + 8;
+      }
+
+      // Finally, save the PDF (metadata preserved)
+      const safeFileName = `insurance_comparison_${prospectName.replace(/\s+/g, '_')}.pdf`;
+      pdf.save(safeFileName);
+    };
+
+    // ---------------------------------------------------------------------
+    // Event handlers wiring
+    // ---------------------------------------------------------------------
+    document.getElementById('addPolicy').addEventListener('click', () => {
+      const policiesContainer = document.getElementById('policiesContainer');
+      const index = policiesContainer.children.length;
+      policiesContainer.appendChild(createPolicyEntry('', 0, 0, 0, index));
+    });
+
+    document.getElementById('updateChart').addEventListener('click', updateChart);
+    document.getElementById('exportPDF').addEventListener('click', exportToPDF);
+
+    // ---------------------------------------------------------------------
+    // Initialization: populate from parsedData and render initial chart
+    // ---------------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      // Populate prospect fields if parsedData provided
+      if (parsedData && parsedData.prospect) {
+        if (typeof parsedData.prospect.name !== 'undefined') document.getElementById('prospectName').value = parsedData.prospect.name;
+        if (typeof parsedData.prospect.comparisonAge !== 'undefined') document.getElementById('comparisonAge').value = parsedData.prospect.comparisonAge;
+      }
+
+      // Populate policy entries if present
+      const policiesContainer = document.getElementById('policiesContainer');
+      if (parsedData && parsedData.policies && parsedData.policies.names && parsedData.policies.names.length) {
+        parsedData.policies.names.forEach((name, index) => {
+          const deathBenefit = (parsedData.policies.deathBenefits && parsedData.policies.deathBenefits[index]) || 0;
+          const cashValue = (parsedData.policies.cashValues && parsedData.policies.cashValues[index]) || 0;
+          const totalOutlay = (parsedData.policies.totalOutlays && parsedData.policies.totalOutlays[index]) || 0;
+          policiesContainer.appendChild(createPolicyEntry(name, deathBenefit, cashValue, totalOutlay, index));
+        });
+      }
+
+      // Ensure chartData has safe defaults
+      if (!chartData || !chartData.labels) {
+        chartData = {
+          labels: [],
+          datasets: [
+            { label: 'Death Benefit', data: [], backgroundColor: '#234990' },
+            { label: 'Cash Value', data: [], backgroundColor: '#326633' },
+            { label: 'Total Outlay', data: [], backgroundColor: '#A80000' }
+          ]
+        };
+      }
+
+      // Render chart
+      initChart();
+    });
+  </script>
+</body>
+</html>
