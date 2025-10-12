@@ -5,6 +5,7 @@ GEM
     afm (1.0.0)
     bigdecimal (3.2.3)
     hashery (2.1.2)
+    json (2.13.2)
     pdf-reader (2.15.0)
       Ascii85 (>= 1.0, < 3.0, != 2.0.0)
       afm (>= 0.2.1, < 2)
@@ -20,6 +21,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  json
   pdf-reader
 
 BUNDLED WITH
