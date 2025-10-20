@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Parser (Local Demo)</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 1000px; margin: auto; }
+        #chartContainer { width: 100%; margin-top: 30px; }
+        #output { background: #f4f4f4; border: 1px solid #ddd; padding: 10px; white-space: pre-wrap; margin-top: 20px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Insurance PDF Parser (Local Demo)</h1>
+    <input type="file" id="pdfFile" accept=".pdf">
+    <button id="submitBtn">Parse PDF</button>
+    <div id="status"></div>
+
+    <div id="chartContainer">
+        <canvas id="myChart"></canvas>
+    </div>
+    
+    <h2>Raw JSON Data</h2>
+    <pre id="output"></pre>
+
+    <script src="app.js"></script>
+</body>
+</html>
