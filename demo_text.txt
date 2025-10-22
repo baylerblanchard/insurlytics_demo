@@ -1,0 +1,532 @@
+{
+  "yearly_data": [
+    {
+      "age": 33,
+      "cumulative_premium": 1463,
+      "net_cash_value": 0,
+      "net_death_benefit": 100000
+    },
+    {
+      "age": 34,
+      "cumulative_premium": 2926,
+      "net_cash_value": 247,
+      "net_death_benefit": 100020
+    },
+    {
+      "age": 35,
+      "cumulative_premium": 4389,
+      "net_cash_value": 1470,
+      "net_death_benefit": 100039
+    },
+    {
+      "age": 36,
+      "cumulative_premium": 5852,
+      "net_cash_value": 2720,
+      "net_death_benefit": 100058
+    },
+    {
+      "age": 37,
+      "cumulative_premium": 7315,
+      "net_cash_value": 3992,
+      "net_death_benefit": 100077
+    },
+    {
+      "age": 38,
+      "cumulative_premium": 8778,
+      "net_cash_value": 5342,
+      "net_death_benefit": 100273
+    },
+    {
+      "age": 39,
+      "cumulative_premium": 10241,
+      "net_cash_value": 6773,
+      "net_death_benefit": 100635
+    },
+    {
+      "age": 40,
+      "cumulative_premium": 11704,
+      "net_cash_value": 8286,
+      "net_death_benefit": 101137
+    },
+    {
+      "age": 41,
+      "cumulative_premium": 13167,
+      "net_cash_value": 9882,
+      "net_death_benefit": 101765
+    },
+    {
+      "age": 42,
+      "cumulative_premium": 14630,
+      "net_cash_value": 11566,
+      "net_death_benefit": 102524
+    },
+    {
+      "age": 43,
+      "cumulative_premium": 16093,
+      "net_cash_value": 13345,
+      "net_death_benefit": 103422
+    },
+    {
+      "age": 44,
+      "cumulative_premium": 17556,
+      "net_cash_value": 15222,
+      "net_death_benefit": 104454
+    },
+    {
+      "age": 45,
+      "cumulative_premium": 19019,
+      "net_cash_value": 17179,
+      "net_death_benefit": 105545
+    },
+    {
+      "age": 46,
+      "cumulative_premium": 20482,
+      "net_cash_value": 19217,
+      "net_death_benefit": 106677
+    },
+    {
+      "age": 47,
+      "cumulative_premium": 21945,
+      "net_cash_value": 21336,
+      "net_death_benefit": 107853
+    },
+    {
+      "age": 48,
+      "cumulative_premium": 23408,
+      "net_cash_value": 23540,
+      "net_death_benefit": 109067
+    },
+    {
+      "age": 49,
+      "cumulative_premium": 24871,
+      "net_cash_value": 25859,
+      "net_death_benefit": 110391
+    },
+    {
+      "age": 50,
+      "cumulative_premium": 26334,
+      "net_cash_value": 28297,
+      "net_death_benefit": 111822
+    },
+    {
+      "age": 51,
+      "cumulative_premium": 27797,
+      "net_cash_value": 30859,
+      "net_death_benefit": 113361
+    },
+    {
+      "age": 52,
+      "cumulative_premium": 29260,
+      "net_cash_value": 33548,
+      "net_death_benefit": 115013
+    },
+    {
+      "age": 53,
+      "cumulative_premium": 30723,
+      "net_cash_value": 36392,
+      "net_death_benefit": 116834
+    },
+    {
+      "age": 54,
+      "cumulative_premium": 32186,
+      "net_cash_value": 39348,
+      "net_death_benefit": 118712
+    },
+    {
+      "age": 55,
+      "cumulative_premium": 33649,
+      "net_cash_value": 42418,
+      "net_death_benefit": 120641
+    },
+    {
+      "age": 56,
+      "cumulative_premium": 35112,
+      "net_cash_value": 45609,
+      "net_death_benefit": 122621
+    },
+    {
+      "age": 57,
+      "cumulative_premium": 36575,
+      "net_cash_value": 48926,
+      "net_death_benefit": 124646
+    },
+    {
+      "age": 58,
+      "cumulative_premium": 38038,
+      "net_cash_value": 52375,
+      "net_death_benefit": 126720
+    },
+    {
+      "age": 59,
+      "cumulative_premium": 39501,
+      "net_cash_value": 55969,
+      "net_death_benefit": 128848
+    },
+    {
+      "age": 60,
+      "cumulative_premium": 40964,
+      "net_cash_value": 59708,
+      "net_death_benefit": 131029
+    },
+    {
+      "age": 61,
+      "cumulative_premium": 42393,
+      "net_cash_value": 63598,
+      "net_death_benefit": 133265
+    },
+    {
+      "age": 62,
+      "cumulative_premium": 43822,
+      "net_cash_value": 67643,
+      "net_death_benefit": 135566
+    },
+    {
+      "age": 63,
+      "cumulative_premium": 45251,
+      "net_cash_value": 71844,
+      "net_death_benefit": 137931
+    },
+    {
+      "age": 64,
+      "cumulative_premium": 46680,
+      "net_cash_value": 76206,
+      "net_death_benefit": 140361
+    },
+    {
+      "age": 65,
+      "cumulative_premium": 48109,
+      "net_cash_value": 80735,
+      "net_death_benefit": 142858
+    },
+    {
+      "age": 66,
+      "cumulative_premium": 48109,
+      "net_cash_value": 84110,
+      "net_death_benefit": 145363
+    },
+    {
+      "age": 67,
+      "cumulative_premium": 48109,
+      "net_cash_value": 87582,
+      "net_death_benefit": 147878
+    },
+    {
+      "age": 68,
+      "cumulative_premium": 48109,
+      "net_cash_value": 91151,
+      "net_death_benefit": 150402
+    },
+    {
+      "age": 69,
+      "cumulative_premium": 48109,
+      "net_cash_value": 94821,
+      "net_death_benefit": 152939
+    },
+    {
+      "age": 70,
+      "cumulative_premium": 48109,
+      "net_cash_value": 98590,
+      "net_death_benefit": 155488
+    },
+    {
+      "age": 71,
+      "cumulative_premium": 48109,
+      "net_cash_value": 102458,
+      "net_death_benefit": 158053
+    },
+    {
+      "age": 72,
+      "cumulative_premium": 48109,
+      "net_cash_value": 106418,
+      "net_death_benefit": 160635
+    },
+    {
+      "age": 73,
+      "cumulative_premium": 48109,
+      "net_cash_value": 110465,
+      "net_death_benefit": 163238
+    },
+    {
+      "age": 74,
+      "cumulative_premium": 48109,
+      "net_cash_value": 114592,
+      "net_death_benefit": 165864
+    },
+    {
+      "age": 75,
+      "cumulative_premium": 48109,
+      "net_cash_value": 118797,
+      "net_death_benefit": 168513
+    },
+    {
+      "age": 76,
+      "cumulative_premium": 48109,
+      "net_cash_value": 123095,
+      "net_death_benefit": 171217
+    },
+    {
+      "age": 77,
+      "cumulative_premium": 48109,
+      "net_cash_value": 127490,
+      "net_death_benefit": 173977
+    },
+    {
+      "age": 78,
+      "cumulative_premium": 48109,
+      "net_cash_value": 131978,
+      "net_death_benefit": 176787
+    },
+    {
+      "age": 79,
+      "cumulative_premium": 48109,
+      "net_cash_value": 136560,
+      "net_death_benefit": 179647
+    },
+    {
+      "age": 80,
+      "cumulative_premium": 48109,
+      "net_cash_value": 141230,
+      "net_death_benefit": 182557
+    },
+    {
+      "age": 81,
+      "cumulative_premium": 48109,
+      "net_cash_value": 145976,
+      "net_death_benefit": 185517
+    },
+    {
+      "age": 82,
+      "cumulative_premium": 48109,
+      "net_cash_value": 150796,
+      "net_death_benefit": 188535
+    },
+    {
+      "age": 83,
+      "cumulative_premium": 48109,
+      "net_cash_value": 155682,
+      "net_death_benefit": 191608
+    },
+    {
+      "age": 84,
+      "cumulative_premium": 48109,
+      "net_cash_value": 160629,
+      "net_death_benefit": 194744
+    },
+    {
+      "age": 85,
+      "cumulative_premium": 48109,
+      "net_cash_value": 165617,
+      "net_death_benefit": 197943
+    },
+    {
+      "age": 86,
+      "cumulative_premium": 48109,
+      "net_cash_value": 170634,
+      "net_death_benefit": 201208
+    },
+    {
+      "age": 87,
+      "cumulative_premium": 48109,
+      "net_cash_value": 175661,
+      "net_death_benefit": 204540
+    },
+    {
+      "age": 88,
+      "cumulative_premium": 48109,
+      "net_cash_value": 180669,
+      "net_death_benefit": 207941
+    },
+    {
+      "age": 89,
+      "cumulative_premium": 48109,
+      "net_cash_value": 185639,
+      "net_death_benefit": 211410
+    },
+    {
+      "age": 90,
+      "cumulative_premium": 48109,
+      "net_cash_value": 190557,
+      "net_death_benefit": 214947
+    },
+    {
+      "age": 91,
+      "cumulative_premium": 48109,
+      "net_cash_value": 195414,
+      "net_death_benefit": 218547
+    },
+    {
+      "age": 92,
+      "cumulative_premium": 48109,
+      "net_cash_value": 200390,
+      "net_death_benefit": 222411
+    },
+    {
+      "age": 93,
+      "cumulative_premium": 48109,
+      "net_cash_value": 205409,
+      "net_death_benefit": 226428
+    },
+    {
+      "age": 94,
+      "cumulative_premium": 48109,
+      "net_cash_value": 210383,
+      "net_death_benefit": 230486
+    },
+    {
+      "age": 95,
+      "cumulative_premium": 48109,
+      "net_cash_value": 215349,
+      "net_death_benefit": 234575
+    },
+    {
+      "age": 96,
+      "cumulative_premium": 48109,
+      "net_cash_value": 220368,
+      "net_death_benefit": 238682
+    },
+    {
+      "age": 97,
+      "cumulative_premium": 48109,
+      "net_cash_value": 225540,
+      "net_death_benefit": 242981
+    },
+    {
+      "age": 98,
+      "cumulative_premium": 48109,
+      "net_cash_value": 230867,
+      "net_death_benefit": 247480
+    },
+    {
+      "age": 99,
+      "cumulative_premium": 48109,
+      "net_cash_value": 236334,
+      "net_death_benefit": 252184
+    },
+    {
+      "age": 100,
+      "cumulative_premium": 48109,
+      "net_cash_value": 241944,
+      "net_death_benefit": 257106
+    },
+    {
+      "age": 101,
+      "cumulative_premium": 48109,
+      "net_cash_value": 247686,
+      "net_death_benefit": 262254
+    },
+    {
+      "age": 102,
+      "cumulative_premium": 48109,
+      "net_cash_value": 253448,
+      "net_death_benefit": 267477
+    },
+    {
+      "age": 103,
+      "cumulative_premium": 48109,
+      "net_cash_value": 259231,
+      "net_death_benefit": 272771
+    },
+    {
+      "age": 104,
+      "cumulative_premium": 48109,
+      "net_cash_value": 265039,
+      "net_death_benefit": 278139
+    },
+    {
+      "age": 105,
+      "cumulative_premium": 48109,
+      "net_cash_value": 270889,
+      "net_death_benefit": 283576
+    },
+    {
+      "age": 106,
+      "cumulative_premium": 48109,
+      "net_cash_value": 276815,
+      "net_death_benefit": 289080
+    },
+    {
+      "age": 107,
+      "cumulative_premium": 48109,
+      "net_cash_value": 282898,
+      "net_death_benefit": 294646
+    },
+    {
+      "age": 108,
+      "cumulative_premium": 48109,
+      "net_cash_value": 289147,
+      "net_death_benefit": 300381
+    },
+    {
+      "age": 109,
+      "cumulative_premium": 48109,
+      "net_cash_value": 295590,
+      "net_death_benefit": 306320
+    },
+    {
+      "age": 110,
+      "cumulative_premium": 48109,
+      "net_cash_value": 302260,
+      "net_death_benefit": 312497
+    },
+    {
+      "age": 111,
+      "cumulative_premium": 48109,
+      "net_cash_value": 309190,
+      "net_death_benefit": 318943
+    },
+    {
+      "age": 112,
+      "cumulative_premium": 48109,
+      "net_cash_value": 316410,
+      "net_death_benefit": 325689
+    },
+    {
+      "age": 113,
+      "cumulative_premium": 48109,
+      "net_cash_value": 323951,
+      "net_death_benefit": 332762
+    },
+    {
+      "age": 114,
+      "cumulative_premium": 48109,
+      "net_cash_value": 331838,
+      "net_death_benefit": 340193
+    },
+    {
+      "age": 115,
+      "cumulative_premium": 48109,
+      "net_cash_value": 340066,
+      "net_death_benefit": 347972
+    },
+    {
+      "age": 116,
+      "cumulative_premium": 48109,
+      "net_cash_value": 348624,
+      "net_death_benefit": 356087
+    },
+    {
+      "age": 117,
+      "cumulative_premium": 48109,
+      "net_cash_value": 357500,
+      "net_death_benefit": 364524
+    },
+    {
+      "age": 118,
+      "cumulative_premium": 48109,
+      "net_cash_value": 366678,
+      "net_death_benefit": 373270
+    },
+    {
+      "age": 119,
+      "cumulative_premium": 48109,
+      "net_cash_value": 376155,
+      "net_death_benefit": 382314
+    },
+    {
+      "age": 120,
+      "cumulative_premium": 48109,
+      "net_cash_value": 390969,
+      "net_death_benefit": 390969
+    }
+  ]
+}
