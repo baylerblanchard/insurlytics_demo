@@ -6,23 +6,62 @@
     <title>PDF Parser (Local Demo)</title>
     <style>
         body { font-family: sans-serif; padding: 20px; max-width: 1000px; margin: auto; }
-        #chartContainer { width: 100%; margin-top: 30px; }
-        #output { background: #f4f4f4; border: 1px solid #ddd; padding: 10px; white-space: pre-wrap; margin-top: 20px; }
+        .chartContainer { width: 100%; margin-top: 20px; margin-bottom: 40px; }
+        #output1, #output2 { background: #f4f4f4; border: 1px solid #ddd; padding: 10px; white-space: pre-wrap; margin-top: 10px; }
+        .file-inputs, .age-comparison { background: #eee; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .file-inputs div { margin-bottom: 10px; }
+        #comparisonDetails { margin-top: 15px; }
+        #comparisonDetails table { width: 100%; border-collapse: collapse; }
+        #comparisonDetails th, #comparisonDetails td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        #comparisonDetails th { background: #f4f4f4; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Insurlytics (Local Demo)</h1>
-    <input type="file" id="pdfFile" accept=".pdf">
-    <button id="submitBtn">Parse PDF</button>
-    <div id="status"></div>
+    <h1>Insurance PDF Comparison Tool</h1>
+    
+    <div class="file-inputs">
+        <div>
+            <label for="pdfFile1">File 1:</label>
+            <input type="file" id="pdfFile1" accept="application/pdf">
+        </div>
+        <div>
+            <label for="pdfFile2">File 2:</label>
+            <input type="file" id="pdfFile2" accept="application/pdf">
+        </div>
+        <button id="compareBtn">Compare Files</button>
+        <div id="status" style="margin-top: 10px;"></div>
+    </div>
 
-    <div id="chartContainer">
-        <canvas id="myChart"></canvas>
+    <div class="age-comparison">
+        <h2>Specific Age Comparison</h2>
+        <p>Enter an age to see a detailed comparison. (You must "Compare Files" first).</p>
+        <input type="number" id="compareAge" placeholder="Enter Age">
+        <button id="compareAgeBtn">Get Details</button>
+        <div id="comparisonDetails"></div>
+    </div>
+
+    <div class="chartContainer">
+        <h2>Net Gain / Loss Comparison</h2>
+        <canvas id="netGainChart"></canvas>
+    </div>
+
+    <div class="chartContainer">
+        <h2>Combo Chart Comparison</h2>
+        <canvas id="comboChart"></canvas>
     </div>
     
     <h2>Raw JSON Data</h2>
-    <pre id="output"></pre>
+    <div style="display: flex; gap: 20px;">
+        <div style="flex: 1;">
+            <h3>File 1</h3>
+            <pre id="output1"></pre>
+        </div>
+        <div style="flex: 1;">
+            <h3>File 2</h3>
+            <pre id="output2"></pre>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>

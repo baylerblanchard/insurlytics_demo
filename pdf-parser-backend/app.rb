@@ -25,7 +25,7 @@ post '/parse' do
 
   # Get the uploaded file
   tempfile = params[:file][:tempfile]
-  
+
   # Read the PDF text
   text = ''
   begin
