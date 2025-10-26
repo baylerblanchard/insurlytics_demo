@@ -118,3 +118,30 @@ pre {
     overflow-x: auto; /* Adds a scrollbar if content is too wide */
     box-shadow: 0 2px 4px rgba(0,0,0,0.2) inset;
 }
+
+
+.details-accordion summary {
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 10px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+.details-accordion summary:hover {
+    background-color: #eee;
+}
+.details-accordion[open] summary {
+    border-bottom: 1px solid #ddd;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.details-accordion .raw-data-container {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
