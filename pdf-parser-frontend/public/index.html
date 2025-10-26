@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Insurlytics Comparison Tool</h1>
+    <h1>Insurlytics (Local Demo)</h1>
     
     <div class="file-inputs">
         <div>
@@ -24,34 +24,38 @@
     </div>
 
     <div class="age-comparison">
-        <h2>Specific Age Comparison</h2>
-        <p>Enter an age to see a detailed comparison. (You must "Compare Files" first).</p>
-        <input type="number" id="compareAge" placeholder="Enter Age">
-        <button id="compareAgeBtn">Get Details</button>
-        <div id="comparisonDetails"></div>
+      <h2>Specific Age Comparison</h2>
+      <p>Enter an age to see a detailed comparison. (You must "Compare Files" first).</p>
+      <input type="number" id="compareAge" placeholder="Enter Age">
+      <button id="compareAgeBtn">Get Details</button>
+      <div id="comparisonDetails"></div>
     </div>
 
     <div class="chartContainer">
-        <h2>Net Gain / Loss Comparison</h2>
-        <canvas id="netGainChart"></canvas>
+      <h2>Annual Performance (Premium vs. Growth)</h2>
+      <canvas id="annualPerformanceChart"></canvas>
     </div>
 
     <div class="chartContainer">
-        <h2>Combo Chart Comparison</h2>
-        <canvas id="comboChart"></canvas>
+      <h2>Combo Chart Comparison (Cumulative)</h2>
+      <canvas id="comboChart"></canvas>
     </div>
     
     <h2>Raw JSON Data</h2>
-    <div style="display: flex; gap: 20px;">
-        <div style="flex: 1;">
+    <details class="details-accordion">
+    <summary>Click to Show/Hide Raw JSON</summary>
+    
+    <div class="raw-data-container">
+        <div class="raw-data-box">
             <h3>File 1</h3>
             <pre id="output1"></pre>
         </div>
-        <div style="flex: 1;">
+        <div class="raw-data-box">
             <h3>File 2</h3>
             <pre id="output2"></pre>
         </div>
     </div>
+    </details>
 
     <script src="app.js"></script>
 </body>
