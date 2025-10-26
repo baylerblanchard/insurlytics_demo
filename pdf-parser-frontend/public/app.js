@@ -31,6 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const file2 = fileInput2.files[0]; 
         // --- (It was "fileleInput2") ---
 
+        statusEl.textContent = "Uploading and parsing... Please wait.";
+        compareBtn.classList.add('loading');
+        compareBtn.disabled = true;
+
         if (!file1 && !file2) {
             statusEl.textContent = "Please select at least one file.";
             return;
@@ -82,6 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("Error:", error);
             statusEl.textContent = `An error occurred: ${error.message}`;
+            compareBtn.classList.remove('loading');
+            compareBtn.disabled = false;
         }
     });
 
