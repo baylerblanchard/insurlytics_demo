@@ -83,6 +83,9 @@ document.addEventListener("DOMContentLoaded", () => {
             renderAnnualPerformanceChart(file1Data, file2Data);
             renderComboChart(file1Data, file2Data);
 
+            compareBtn.classList.remove('loading');
+            compareBtn.disabled = false;
+
         } catch (error) {
             console.error("Error:", error);
             statusEl.textContent = `An error occurred: ${error.message}`;
@@ -239,6 +242,10 @@ document.addEventListener("DOMContentLoaded", () => {
             data: { labels: labels, datasets: datasets },
             options: {
                 responsive: true,
+                animation: {
+                    duration: 800, // Animation speed in milliseconds
+                    easing: 'easeOutQuart', // A smooth "easing" effect
+                },
                 plugins: { 
                     title: { display: true, text: chartTitle },
                     tooltip: { mode: 'index', intersect: false }
@@ -284,6 +291,10 @@ document.addEventListener("DOMContentLoaded", () => {
             data: { labels: labels, datasets: datasets },
             options: {
                 responsive: true,
+                animation: {
+                    duration: 800, // Animation speed in milliseconds
+                    easing: 'easeOutQuart', // A smooth "easing" effect
+                },
                 plugins: { 
                     title: { display: true, text: chartTitle },
                     tooltip: { mode: 'index', intersect: false }
