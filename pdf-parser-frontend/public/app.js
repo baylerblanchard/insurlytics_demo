@@ -1,52 +1,83 @@
-// public/app.js (Corrected)
+// public/app.js (NEW FILE)
 
 document.addEventListener("DOMContentLoaded", () => {
-
     const API_URL = "http://localhost:9292"; 
 
-    // --- DOM elements ---
+    // --- Sidebar DOM elements ---
     const fileInput1 = document.getElementById('pdfFile1');
     const fileInput2 = document.getElementById('pdfFile2');
     const compareBtn = document.getElementById('compareBtn');
     const statusEl = document.getElementById('status');
     const outputEl1 = document.getElementById('output1');
     const outputEl2 = document.getElementById('output2');
-    
+    const ageComparisonSection = document.getElementById('age-comparison-section');
+    const ageComparisonControls = document.querySelector('.age-comparison');
     const compareAgeInput = document.getElementById('compareAge');
     const compareAgeBtn = document.getElementById('compareAgeBtn');
     const comparisonDetailsEl = document.getElementById('comparisonDetails');
 
-    // --- Global data variables ---
+    // --- Main Content DOM elements ---
+    const mainContentArea = document.getElementById('main-content-area');
+    const welcomeMessage = document.getElementById('welcome-message');
+    const tabContainer = document.querySelector('.chart-tabs');
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // --- Global data & charts ---
     let file1Data = null;
     let file2Data = null;
-
-    // --- Chart instances ---
     let myComboChartInstance = null;
-    let myAnnualPerformanceChartInstance = null; 
+    let myAnnualPerformanceChartInstance = null;
 
-    // === "COMPARE FILES" BUTTON LISTENER (CORRECTED) ===
+    // === 1. INITIAL UI STATE ===
+    function initializeUI() {
+        mainContentArea.style.display = 'none'; // Hide main content area
+        ageComparisonControls.classList.remove('enabled');
+    }
+    initializeUI(); // Call on load
+
+    // === 2. TAB NAVIGATION ===
+    tabContainer.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('tab-link')) return;
+
+        const tabName = e.target.dataset.tab;
+
+        // Update tab link styling
+        tabLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.dataset.tab === tabName) {
+                link.classList.add('active');
+            }
+        });
+
+        // Show/Hide tab content
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+            if (content.id === tabName) {
+                content.classList.add('active');
+            }
+        });
+    });
+
+    // === 3. "PARSE & COMPARE" BUTTON LISTENER ===
     compareBtn.addEventListener('click', async () => {
         const file1 = fileInput1.files[0];
-        // --- THIS LINE IS NOW FIXED ---
-        const file2 = fileInput2.files[0]; 
-        // --- (It was "fileleInput2") ---
-
-        statusEl.textContent = "Uploading and parsing... Please wait.";
-        compareBtn.classList.add('loading');
-        compareBtn.disabled = true;
+        const file2 = fileInput2.files[0];
 
         if (!file1 && !file2) {
             statusEl.textContent = "Please select at least one file.";
             return;
         }
 
+        // --- Reset UI & Data ---
         file1Data = null;
         file2Data = null;
         outputEl1.textContent = "";
         outputEl2.textContent = "";
         comparisonDetailsEl.innerHTML = "";
-
         statusEl.textContent = "Uploading and parsing... Please wait.";
+        compareBtn.classList.add('loading');
+        compareBtn.disabled = true;
 
         const parseFile = async (file) => {
             const formData = new FormData();
@@ -80,22 +111,31 @@ document.addEventListener("DOMContentLoaded", () => {
             
             statusEl.textContent = "Parse complete! Charts updated.";
             
+            // --- RENDER CHARTS & ENABLE UI ---
             renderAnnualPerformanceChart(file1Data, file2Data);
             renderComboChart(file1Data, file2Data);
 
-            compareBtn.classList.remove('loading');
-            compareBtn.disabled = false;
+            // --- Show the main content and enable controls ---
+            mainContentArea.style.display = 'block';
+            welcomeMessage.style.display = 'none'; // Hide welcome message
+            ageComparisonControls.classList.add('enabled');
 
         } catch (error) {
             console.error("Error:", error);
             statusEl.textContent = `An error occurred: ${error.message}`;
+            // Hide charts if parsing fails
+            mainContentArea.style.display = 'none';
+            welcomeMessage.style.display = 'block';
+        } finally {
+            // Re-enable button
             compareBtn.classList.remove('loading');
             compareBtn.disabled = false;
         }
     });
 
-    // === "GET DETAILS" BUTTON LISTENER (No change) ===
+    // === 4. "GET DETAILS" BUTTON LISTENER ===
     compareAgeBtn.addEventListener('click', () => {
+        // ... (This function's logic is identical to the previous version) ...
         const age = parseInt(compareAgeInput.value, 10);
         if (!age) {
             comparisonDetailsEl.innerHTML = "<p style='color: red;'>Please enter a valid age.</p>";
@@ -127,56 +167,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const annual1 = getAnnualData(data1_curr, data1_prev);
         const annual2 = getAnnualData(data2_curr, data2_prev);
-
         const format = (val) => val === null || val === undefined ? 'N/A' : `$${val.toLocaleString()}`;
 
         comparisonDetailsEl.innerHTML = `
-            <h3>Comparison at Age ${age}</h3>
             <table>
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>File 1</th>
-                        <th>File 2</th>
-                    </tr>
-                </thead>
+                <thead> <tr> <th>Metric</th> <th>File 1</th> <th>File 2</th> </tr> </thead>
                 <tbody>
-                    <tr>
-                        <td>Cumulative Premium</td>
-                        <td>${format(data1_curr?.cumulative_premium)}</td>
-                        <td>${format(data2_curr?.cumulative_premium)}</td>
-                    </tr>
-                    <tr>
-                        <td>Net Cash Value</td>
-                        <td>${format(data1_curr?.net_cash_value)}</td>
-                        <td>${format(data2_curr?.net_cash_value)}</td>
-                    </tr>
-                    <tr>
-                        <td>Net Death Benefit</td>
-                        <td>${format(data1_curr?.net_death_benefit)}</td>
-                        <td>${format(data2_curr?.net_death_benefit)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Net Gain / Loss</strong></td>
-                        <td><strong>${format(annual1.netGain)}</strong></td>
-                        <td><strong>${format(annual2.netGain)}</strong></td>
-                    </tr>
-                    <tr style="background-color: #f7f7f7;">
-                        <td><strong>Annual Premium Paid</strong></td>
-                        <td><strong>${format(annual1.premium)}</strong></td>
-                        <td><strong>${format(annual2.premium)}</strong></td>
-                    </tr>
-                    <tr style="background-color: #f7f7f7;">
-                        <td><strong>Annual Cash Value Growth</strong></td>
-                        <td><strong>${format(annual1.growth)}</strong></td>
-                        <td><strong>${format(annual2.growth)}</strong></td>
-                    </tr>
+                    <tr> <td>Cumulative Premium</td> <td>${format(data1_curr?.cumulative_premium)}</td> <td>${format(data2_curr?.cumulative_premium)}</td> </tr>
+                    <tr> <td>Net Cash Value</td> <td>${format(data1_curr?.net_cash_value)}</td> <td>${format(data2_curr?.net_cash_value)}</td> </tr>
+                    <tr> <td>Net Death Benefit</td> <td>${format(data1_curr?.net_death_benefit)}</td> <td>${format(data2_curr?.net_death_benefit)}</td> </tr>
+                    <tr> <td><strong>Net Gain / Loss</strong></td> <td><strong>${format(annual1.netGain)}</strong></td> <td><strong>${format(annual2.netGain)}</strong></td> </tr>
+                    <tr style="background-color: #f7f7f7;"> <td><strong>Annual Premium</strong></td> <td><strong>${format(annual1.premium)}</strong></td> <td><strong>${format(annual2.premium)}</strong></td> </tr>
+                    <tr style="background-color: #f7f7f7;"> <td><strong>Annual Growth</strong></td> <td><strong>${format(annual1.growth)}</strong></td> <td><strong>${format(annual2.growth)}</strong></td> </tr>
                 </tbody>
             </table>
         `;
     });
     
-    // --- Helper functions (No change) ---
+    // --- 5. HELPER FUNCTIONS ---
     const getCombinedLabels = (data1, data2) => {
         const ages1 = data1.yearly_data.map(item => item.age);
         const ages2 = data2 ? data2.yearly_data.map(item => item.age) : []; 
@@ -189,88 +197,61 @@ document.addEventListener("DOMContentLoaded", () => {
         return labels.map(age => dataMap.get(age) || null); 
     };
 
-    // --- RENDER FUNCTION 1: ANNUAL PERFORMANCE (No change) ---
+    // --- 6. CHART RENDER FUNCTIONS (Note the new canvas IDs) ---
     function renderAnnualPerformanceChart(apiData1, apiData2) {
-        const ctx = document.getElementById('annualPerformanceChart').getContext('2d');
-
+        // === Use the new canvas ID ===
+        const ctx = document.getElementById('annualPerformanceCanvas').getContext('2d'); 
+        
+        // ... (The rest of this function's logic is identical to the previous version) ...
         const calculateAnnualData = (yearlyData) => {
-            let annualPremiums = [];
-            let annualGrowth = [];
+            let annualPremiums = [], annualGrowth = [];
             for (let i = 0; i < yearlyData.length; i++) {
-                const curr = yearlyData[i];
-                const prev = i > 0 ? yearlyData[i - 1] : null;
-                
+                const curr = yearlyData[i], prev = i > 0 ? yearlyData[i - 1] : null;
                 const prevPremium = prev ? prev.cumulative_premium : 0;
                 const prevGrowth = prev ? prev.net_cash_value : 0;
-                
                 annualPremiums.push(curr.cumulative_premium - prevPremium);
                 annualGrowth.push(curr.net_cash_value - prevGrowth);
             }
             return { annualPremiums, annualGrowth };
         };
-
         const labels = getCombinedLabels(apiData1, apiData2);
-        
         const data1Map = new Map(apiData1.yearly_data.map(item => [item.age, item]));
         const fullData1 = labels.map(age => data1Map.get(age) || null);
         const { annualPremiums: annualPremiums1, annualGrowth: annualGrowth1 } = calculateAnnualData(fullData1);
-        
         let datasets = [
             { label: 'File 1 - Annual Premium', data: annualPremiums1, borderColor: 'red', backgroundColor: 'rgba(255, 99, 132, 0.6)', type: 'bar' },
             { label: 'File 1 - Annual CV Growth', data: annualGrowth1, borderColor: 'blue', backgroundColor: 'blue', fill: false, type: 'line', tension: 0.1 }
         ];
-
         if (apiData2) {
             const data2Map = new Map(apiData2.yearly_data.map(item => [item.age, item]));
             const fullData2 = labels.map(age => data2Map.get(age) || null);
             const { annualPremiums: annualPremiums2, annualGrowth: annualGrowth2 } = calculateAnnualData(fullData2);
-            
             datasets.push(
                 { label: 'File 2 - Annual Premium', data: annualPremiums2, borderColor: 'orange', backgroundColor: 'rgba(255, 159, 64, 0.6)', type: 'bar' },
                 { label: 'File 2 - Annual CV Growth', data: annualGrowth2, borderColor: 'cyan', backgroundColor: 'cyan', fill: false, type: 'line', tension: 0.1 }
             );
         }
-
-        if (myAnnualPerformanceChartInstance) {
-            myAnnualPerformanceChartInstance.destroy();
-        }
-
+        if (myAnnualPerformanceChartInstance) myAnnualPerformanceChartInstance.destroy();
         const chartTitle = apiData2 ? 'Annual Performance (Side-by-Side)' : 'Annual Performance (File 1)';
-
         myAnnualPerformanceChartInstance = new Chart(ctx, {
             type: 'bar', 
             data: { labels: labels, datasets: datasets },
-            options: {
-                responsive: true,
-                animation: {
-                    duration: 800, // Animation speed in milliseconds
-                    easing: 'easeOutQuart', // A smooth "easing" effect
-                },
-                plugins: { 
-                    title: { display: true, text: chartTitle },
-                    tooltip: { mode: 'index', intersect: false }
-                },
-                scales: {
-                    x: { title: { display: true, text: 'Age' } },
-                    y: { title: { display: true, text: 'Value ($)' } }
-                }
-            }
-        });
+            options: { responsive: true, plugins: { title: { display: true, text: chartTitle }, tooltip: { mode: 'index', intersect: false }}, scales: { x: { title: { display: true, text: 'Age' }}, y: { title: { display: true, text: 'Value ($)' }}}
+        }});
     }
 
-    // --- RENDER FUNCTION 2: COMBO CHART (No change) ---
     function renderComboChart(apiData1, apiData2) {
-        const ctx = document.getElementById('comboChart').getContext('2d');
-        const labels = getCombinedLabels(apiData1, apiData2);
+        // === Use the new canvas ID ===
+        const ctx = document.getElementById('comboCanvas').getContext('2d');
         
+        // ... (The rest of this function's logic is identical to the previous version) ...
+        const labels = getCombinedLabels(apiData1, apiData2);
         const premiumData1 = mapDataToLabels(labels, apiData1.yearly_data).map(item => item ? item.cumulative_premium : null);
         const cashValueData1 = mapDataToLabels(labels, apiData1.yearly_data).map(item => item ? item.net_cash_value : null);
-
         let datasets = [
             { label: 'File 1 - Cash Value', data: cashValueData1, borderColor: 'blue', backgroundColor: 'blue', fill: false, type: 'line', tension: 0.1 },
             { label: 'File 1 - Premium', data: premiumData1, borderColor: 'red', backgroundColor: 'rgba(255, 99, 132, 0.6)' }
         ];
-
         if (apiData2) {
             const premiumData2 = mapDataToLabels(labels, apiData2.yearly_data).map(item => item ? item.cumulative_premium : null);
             const cashValueData2 = mapDataToLabels(labels, apiData2.yearly_data).map(item => item ? item.net_cash_value : null);
@@ -279,32 +260,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 { label: 'File 2 - Premium', data: premiumData2, borderColor: 'orange', backgroundColor: 'rgba(255, 159, 64, 0.6)' }
             );
         }
-
-        if (myComboChartInstance) {
-            myComboChartInstance.destroy();
-        }
-
-        const chartTitle = apiData2 ? 'Policy Value vs. Premium (Side-by-Side)' : 'Policy Value vs. Premium (File 1)';
-
+        if (myComboChartInstance) myComboChartInstance.destroy();
+        const chartTitle = apiData2 ? 'Cumulative Value vs. Premium (Side-by-Side)' : 'Cumulative Value vs. Premium (File 1)';
         myComboChartInstance = new Chart(ctx, {
             type: 'bar', 
             data: { labels: labels, datasets: datasets },
-            options: {
-                responsive: true,
-                animation: {
-                    duration: 800, // Animation speed in milliseconds
-                    easing: 'easeOutQuart', // A smooth "easing" effect
-                },
-                plugins: { 
-                    title: { display: true, text: chartTitle },
-                    tooltip: { mode: 'index', intersect: false }
-                },
-                scales: {
-                    x: { title: { display: true, text: 'Age' } },
-                    y: { title: { display: true, text: 'Value ($)' } }
-                }
-            }
-        });
+            options: { responsive: true, plugins: { title: { display: true, text: chartTitle }, tooltip: { mode: 'index', intersect: false }}, scales: { x: { title: { display: true, text: 'Age' }}, y: { title: { display: true, text: 'Value ($)' }}}
+        }});
     }
 
 }); // End of DOMContentLoaded
