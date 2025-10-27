@@ -1,61 +1,85 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insurlytics (Local Demo)</title>
+    <title>PDF Parser (Local Demo)</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Insurlytics (Local Demo)</h1>
-    
-    <div class="file-inputs">
-        <div>
-            <label for="pdfFile1">File 1:</label>
-            <input type="file" id="pdfFile1" accept="application/pdf">
-        </div>
-        <div>
-            <label for="pdfFile2">File 2:</label>
-            <input type="file" id="pdfFile2" accept="application/pdf">
-        </div>
-        <button id="compareBtn">Compare Files</button>
-        <div id="status" style="margin-top: 10px;"></div>
-    </div>
 
-    <div class="age-comparison">
-      <h2>Specific Age Comparison</h2>
-      <p>Enter an age to see a detailed comparison. (You must "Compare Files" first).</p>
-      <input type="number" id="compareAge" placeholder="Enter Age">
-      <button id="compareAgeBtn">Get Details</button>
-      <div id="comparisonDetails"></div>
-    </div>
+    <div class="app-container">
 
-    <div class="chartContainer">
-      <h2>Annual Performance (Premium vs. Growth)</h2>
-      <canvas id="annualPerformanceChart"></canvas>
-    </div>
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <h1>Policy Analyzer</h1>
+            </header>
 
-    <div class="chartContainer">
-      <h2>Combo Chart Comparison (Cumulative)</h2>
-      <canvas id="comboChart"></canvas>
+            <section class="sidebar-section">
+                <h2>1. Load Files</h2>
+                <div class="file-inputs">
+                    <div>
+                        <label for="pdfFile1">File 1:</label>
+                        <input type="file" id="pdfFile1" accept="application/pdf">
+                    </div>
+                    <div>
+                        <label for="pdfFile2">File 2 (Optional):</label>
+                        <input type="file" id="pdfFile2" accept="application/pdf">
+                    </div>
+                    <button id="compareBtn">Parse & Compare</button>
+                    <div id="status"></div>
+                </div>
+            </section>
+
+            <section class="sidebar-section" id="age-comparison-section">
+                <h2>2. Compare Age</h2>
+                <div class="age-comparison">
+                    <p>Enter an age to see a detailed comparison.</p>
+                    <input type="number" id="compareAge" placeholder="Enter Age">
+                    <button id="compareAgeBtn">Get Details</button>
+                    <div id="comparisonDetails"></div>
+                </div>
+            </section>
+
+            <section class="sidebar-section">
+                <h2>3. Raw Data</h2>
+                <details class="details-accordion">
+                    <summary>Show/Hide Raw JSON</summary>
+                    <div class="raw-data-container">
+                        <div class="raw-data-box">
+                            <h3>File 1</h3>
+                            <pre id="output1"></pre>
+                        </div>
+                        <div class="raw-data-box">
+                            <h3>File 2</h3>
+                            <pre id="output2"></pre>
+                        </div>
+                    </div>
+                </details>
+            </section>
+        </aside>
+
+        <main class="main-content" id="main-content-area">
+            
+            <nav class="chart-tabs">
+                <button class="tab-link active" data-tab="annualPerformanceChart">Annual Performance</button>
+                <button class="tab-link" data-tab="comboChart">Cumulative Value</button>
+            </nav>
+
+            <div id="annualPerformanceChart" class="chartContainer tab-content active">
+                <canvas id="annualPerformanceCanvas"></canvas>
+            </div>
+
+            <div id="comboChart" class="chartContainer tab-content">
+                <canvas id="comboCanvas"></canvas>
+            </div>
+
+            <div id="welcome-message" class="welcome-container">
+                <h2>Welcome to the Policy Analyzer</h2>
+                <p>Please upload one or two PDF files using the panel on the left to begin the analysis.</p>
+            </div>
+
+        </main>
     </div>
-    
-    <h2>Raw JSON Data</h2>
-    <details class="details-accordion">
-    <summary>Click to Show/Hide Raw JSON</summary>
-    
-    <div class="raw-data-container">
-        <div class="raw-data-box">
-            <h3>File 1</h3>
-            <pre id="output1"></pre>
-        </div>
-        <div class="raw-data-box">
-            <h3>File 2</h3>
-            <pre id="output2"></pre>
-        </div>
-    </div>
-    </details>
 
     <script src="app.js"></script>
 </body>
