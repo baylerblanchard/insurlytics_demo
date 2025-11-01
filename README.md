@@ -1,4 +1,4 @@
 # insurlytics_demo
-Converts complex life insurance illustrations into interactive illustrations. 
+Converts complex life insurance illustrations into interactive graphs. 
 
-I need to try to get the testing environment ready this week. 
+To run this project locally, 
