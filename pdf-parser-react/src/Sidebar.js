@@ -75,7 +75,7 @@ export function Sidebar({ onParse, isLoading, status, file1Data, file2Data }) {
   return (
     <aside className="sidebar">
       <header className="sidebar-header">
-        <h1>Policy Analyzer</h1>
+        <h1>Insurlytics Demo</h1>
       </header>
 
       {/* --- File Uploader --- */}

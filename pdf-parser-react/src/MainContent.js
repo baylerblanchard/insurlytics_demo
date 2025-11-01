@@ -127,7 +127,7 @@ export function MainContent({ file1Data, file2Data }) {
     return (
       <main className="main-content">
         <div id="welcome-message" className="welcome-container">
-          <h2>Welcome to the Policy Analyzer</h2>
+          <h2>Welcome to the Insurlytics Demo</h2>
           <p>Please upload one or two PDF files using the panel on the left to begin the analysis.</p>
         </div>
       </main>
