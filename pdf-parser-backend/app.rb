@@ -9,6 +9,14 @@ require_relative 'parser' # Loads your parser.rb file
 # Without this, the browser will block the request.
 before do
   # Using * is fine for local testing
+  # 
+  allowed_origins = ['http://localhost:5000', 'http://localhost:3000']
+  
+  origin = request.env['HTTP_ORIGIN']
+  if allowed_origins.include?(origin)
+     headers['Access-Control-Allow-Origin'] = origin
+  end
+  
   headers['Access-Control-Allow-Origin'] = '*'
   headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
   headers['Access-Control-Allow-Headers'] = 'Content-Type'
