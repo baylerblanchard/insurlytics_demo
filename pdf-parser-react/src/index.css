@@ -1,5 +1,3 @@
-/* public/styles.css (NEW FILE) */
-
 /* 1. Core Styles */
 :root {
     --primary-blue: #007bff;
@@ -165,7 +163,7 @@ button:hover {
     display: block; /* Show only the active one */
 }
 
-/* 9. Welcome & Accordion Styles */
+/* 9. Welcome, Accordion, Login */
 .welcome-container {
     text-align: center;
     padding: 100px 20px;
@@ -175,6 +173,22 @@ button:hover {
 }
 .welcome-container h2 {
     border-bottom: none;
+}
+.login-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+.login-container input {
+    width: calc(100% - 20px); /* 100% - padding */
+    margin-bottom: 15px;
+}
+.login-container button {
+    margin-bottom: 10px;
 }
 
 .details-accordion summary {
@@ -191,12 +205,7 @@ button:hover {
     background-color: #eee;
 }
 pre {
-    background: #2d2d2d;
-    color: #f1f1f1;
-    padding: 15px;
-    border-radius: 8px;
-    overflow-x: auto;
-    font-size: 13px;
+  display: none; /* Hide default pre, we use the component */
 }
 .raw-data-container {
     margin-top: 10px;
@@ -227,4 +236,44 @@ button.loading::after {
 @keyframes spinner {
     from { transform: rotate(0turn); }
     to   { transform: rotate(1turn); }
+}
+
+/* 11. New Raw Data Styles */
+.raw-data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.raw-data-header h3 {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+.copy-btn {
+  width: auto; 
+  padding: 5px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #555;
+}
+.copy-btn:hover {
+  background-color: #333;
+}
+.user-info {
+  background: #f7f7f7;
+  padding: 15px;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+.user-info p {
+  margin: 0 0 10px 0;
+  font-weight: 600;
+}
+.sign-out-btn {
+  background-color: #777;
+  width: 100%;
+}
+.sign-out-btn:hover {
+  background-color: #555;
 }

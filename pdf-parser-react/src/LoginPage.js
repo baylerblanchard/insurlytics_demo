@@ -1,4 +1,3 @@
-// src/LoginPage.js
 import React, { useState } from 'react';
 import { auth } from './firebase';
 import { 
@@ -6,7 +5,6 @@ import {
   createUserWithEmailAndPassword 
 } from "firebase/auth";
 
-// A simple, unstyled login/signup form
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +12,7 @@ export function LoginPage() {
 
   const handleSignIn = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
@@ -23,6 +22,7 @@ export function LoginPage() {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       await createUserWithEmailAndPassword(auth, email, password);
     } catch (err) {
@@ -31,7 +31,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="login-container"> {/* Add styles for this in index.css */}
+    <div className="login-container">
       <h1>Policy Analyzer</h1>
       <form>
         <input 
@@ -39,15 +39,17 @@ export function LoginPage() {
           value={email} 
           onChange={(e) => setEmail(e.target.value)} 
           placeholder="Email" 
+          required
         />
         <input 
           type="password" 
           value={password} 
           onChange={(e) => setPassword(e.target.value)} 
-          placeholder="Password" 
+          placeholder="Password"
+          required
         />
         <button onClick={handleSignIn}>Sign In</button>
-        <button onClick={handleSignUp}>Sign Up</button>
+        <button onClick={handleSignUp} style={{backgroundColor: '#555'}}>Sign Up</button>
         {error && <p style={{color: 'red'}}>{error}</p>}
       </form>
     </div>

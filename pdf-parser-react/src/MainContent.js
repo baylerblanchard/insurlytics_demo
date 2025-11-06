@@ -1,4 +1,3 @@
-// src/MainContent.js
 import React, { useState, useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { 
@@ -25,7 +24,7 @@ ChartJS.register(
   Legend
 );
 
-// --- HELPER FUNCTIONS (Your old logic) ---
+// --- HELPER FUNCTIONS ---
 const getCombinedLabels = (data1, data2) => {
     const ages1 = data1.yearly_data.map(item => item.age);
     const ages2 = data2 ? data2.yearly_data.map(item => item.age) : []; 
@@ -64,7 +63,7 @@ const calculateAnnualData = (yearlyData) => {
 export function MainContent({ file1Data, file2Data }) {
   const [activeTab, setActiveTab] = useState('annual');
 
-  // === THIS IS THE FULLY IMPLEMENTED LOGIC ===
+  // useMemo hook calculates chart data only when file data changes
   const { annualData, comboData } = useMemo(() => {
     if (!file1Data) return { annualData: null, comboData: null };
     
@@ -108,27 +107,20 @@ export function MainContent({ file1Data, file2Data }) {
         );
     }
     
-    // --- 3. Return the final, formatted objects ---
     return {
-      annualData: {
-          labels: labels,
-          datasets: annualDatasets
-      },
-      comboData: {
-          labels: labels,
-          datasets: comboDatasets
-      }
+      annualData: { labels, datasets: annualDatasets },
+      comboData: { labels, datasets: comboDatasets }
     };
 
-  }, [file1Data, file2Data]); // This is the dependency array
+  }, [file1Data, file2Data]); // Dependency array
 
-  // If we have no data, show the welcome message
+  // --- Render Logic ---
   if (!file1Data) {
     return (
       <main className="main-content">
         <div id="welcome-message" className="welcome-container">
-          <h2>Welcome to the Insurlytics Demo</h2>
-          <p>Please upload one or two PDF files using the panel on the left to begin the analysis.</p>
+          <h2>Welcome to the Policy Analyzer</h2>
+          <p>Please log in and upload a PDF file using the panel on the left to begin.</p>
         </div>
       </main>
     );
@@ -138,7 +130,7 @@ export function MainContent({ file1Data, file2Data }) {
   const chartOptions = (title) => ({
       responsive: true, 
       plugins: { 
-          title: { display: true, text: title }, 
+          title: { display: true, text: title, font: { size: 16 } }, 
           tooltip: { mode: 'index', intersect: false }
       }, 
       scales: { 
@@ -151,7 +143,6 @@ export function MainContent({ file1Data, file2Data }) {
       }
   });
 
-  // If we DO have data, show the tabs and charts
   return (
     <main className="main-content">
       <nav className="chart-tabs">
@@ -169,7 +160,6 @@ export function MainContent({ file1Data, file2Data }) {
         </button>
       </nav>
 
-      {/* --- Chart Renderer --- */}
       <div className={`tab-content ${activeTab === 'annual' ? 'active' : ''}`}>
         <Bar 
           data={annualData} 
