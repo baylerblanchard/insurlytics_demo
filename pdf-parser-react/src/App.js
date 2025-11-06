@@ -1,46 +1,68 @@
 // src/App.js
-import React, { useState, useMemo } from 'react';
-import './index.css'; // We'll put all your styles here
+import React, { useState } from 'react';
+import './index.css';
 import { Sidebar } from './Sidebar';
 import { MainContent } from './MainContent';
+import { LoginPage } from './LoginPage'; // Make sure this file exists
 
-// Your API URL (now a constant)
+// 1. Import hooks
+import { auth } from './firebase'; // Make sure this file exists
+import { useAuthState } from 'react-firebase-hooks/auth';
+
+// Your API URL
 const API_URL = "http://localhost:9292";
 
 function App() {
   // --- This is the new "State Management" ---
-  // Instead of global variables, we use React's 'useState' hook.
-  // When you call 'setIsLoading(true)', React automatically re-renders
-  // any component that depends on 'isLoading'. This is what fixes the
-  // "clunky" feel.
   const [isLoading, setIsLoading] = useState(false);
   const [file1Data, setFile1Data] = useState(null);
   const [file2Data, setFile2Data] = useState(null);
   const [status, setStatus] = useState('');
 
-  // --- Data-Parsing Logic ---
+  // 2. This hook watches Firebase and gives you the 'user' object
+  const [user, loading, error] = useAuthState(auth);
+
+  // --- This is the main PARSING LOGIC ---
+  // It lives in App.js so it can set the app's state
   const handleParseFiles = async (file1, file2) => {
     if (!file1 && !file2) {
       setStatus("Please select at least one file.");
       return;
     }
 
-    // 1. Set the loading state
     setIsLoading(true);
     setStatus("Uploading and parsing... Please wait.");
     setFile1Data(null);
     setFile2Data(null);
 
+    // This is the internal helper function that contains "Step 4"
     const parseFile = async (file) => {
+      
+      // === THIS IS THE "STEP 4" CODE ===
+      if (!user) { // Check if the user object from useAuthState exists
+        throw new Error('You must be logged in to parse files.');
+      }
+      
+      // 2. Get their ID token
+      const token = await user.getIdToken();
+
       const formData = new FormData();
       formData.append('file', file);
+      
+      // 3. Make the authenticated API call
       const response = await fetch(`${API_URL}/parse`, {
-        method: 'POST',
-        body: formData,
+          method: 'POST',
+          headers: {
+              // This is the new, required header
+              'Authorization': `Bearer ${token}` 
+          },
+          body: formData,
       });
+      // === END OF "STEP 4" CODE ===
+
       if (!response.ok) {
-        const err = await response.json();
-        throw new Error(`Error parsing ${file.name}: ${err.error || response.statusText}`);
+          const err = await response.json();
+          throw new Error(`Error parsing ${file.name}: ${err.error || response.statusText}`);
       }
       return response.json();
     };
@@ -62,29 +84,46 @@ function App() {
       console.error("Error:", error);
       setStatus(`An error occurred: ${error.message}`);
     } finally {
-      // 4. Turn off loading state (no matter what)
+      // 4. Turn off loading state
       setIsLoading(false);
     }
   };
 
-  // --- Render the UI ---
-  // This is "declarative." We are *describing* the UI based on
-  // the current state.
-  return (
-    <div className="app-container">
-      <Sidebar
-        onParse={handleParseFiles}
-        isLoading={isLoading}
-        status={status}
-        file1Data={file1Data}
-        file2Data={file2Data}
-      />
-      <MainContent
-        file1Data={file1Data}
-        file2Data={file2Data}
-      />
-    </div>
-  );
+  // --- This is the main Router logic ---
+  if (loading) {
+    return <div>Loading...</div>; // Or a nice spinner component
+  }
+
+  if (error) {
+    return <div><p>Error: {error.message}</p></div>;
+  }
+  
+  if (user) {
+    // --- User is LOGGED IN ---
+    // Show the main app and pass down the state and functions
+    return (
+      <div className="app-container">
+        <Sidebar
+          // Pass the function down to the sidebar
+          onParse={handleParseFiles} 
+          // Pass down state
+          isLoading={isLoading}
+          status={status}
+          file1Data={file1Data}
+          file2Data={file2Data}
+          // Pass the user object so Sidebar can show email, etc.
+          user={user} 
+        />
+        <MainContent
+          file1Data={file1Data}
+          file2Data={file2Data}
+        />
+      </div>
+    );
+  } 
+  
+  // --- User is LOGGED OUT ---
+  return <LoginPage />;
 }
 
 export default App;

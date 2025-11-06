@@ -1,7 +1,13 @@
-// src/Sidebar.js
 import React, { useState } from 'react';
+// Import Auth and SignOut
+import { auth } from './firebase';
+import { signOut } from "firebase/auth";
+// Import Syntax Highlighter
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-// --- Helper Functions for "Get Details" ---
+// --- Helper Functions for "Get Details" Table ---
+// We keep these here because they are only used by this component
 const findDataByAge = (age, data) => data.yearly_data.find(item => item.age === age);
 
 const getAnnualData = (curr, prev) => {
@@ -20,19 +26,50 @@ const format = (val) => val === null || val === undefined ? 'N/A' : `$${val.toLo
 // --- End of Helpers ---
 
 
-export function Sidebar({ onParse, isLoading, status, file1Data, file2Data }) {
+// Our component receives all its main data and functions as props from App.js
+export function Sidebar({ 
+  user, 
+  onParse, 
+  isLoading, 
+  status, 
+  file1Data, 
+  file2Data 
+}) {
+  
+  // --- Local State ---
+  // This state is for the inputs *before* they are submitted
   const [file1, setFile1] = useState(null);
   const [file2, setFile2] = useState(null);
   const [compareAge, setCompareAge] = useState('');
-  
-  // This new state will hold our comparison table HTML
   const [detailsHTML, setDetailsHTML] = useState('');
+  const [copyStatus, setCopyStatus] = useState(''); // 'file1' or 'file2'
 
+  // --- Event Handlers ---
+
+  // Tells App.js to run the parse logic
   const handleParseClick = () => {
     onParse(file1, file2);
   };
+
+  // Signs the user out
+  const handleSignOut = () => {
+    signOut(auth);
+  };
+
+  // Copies JSON to clipboard
+  const handleCopy = (fileKey) => {
+    const dataToCopy = (fileKey === 'file1') ? file1Data : file2Data;
+    if (!dataToCopy) return;
+
+    navigator.clipboard.writeText(JSON.stringify(dataToCopy, null, 2))
+      .then(() => {
+        setCopyStatus(fileKey);
+        setTimeout(() => setCopyStatus(''), 2000);
+      })
+      .catch(err => console.error('Failed to copy text: ', err));
+  };
   
-  // --- This logic is now fully implemented ---
+  // Builds the age comparison table
   const handleGetDetails = () => {
     const age = parseInt(compareAge, 10);
     if (!age) {
@@ -66,16 +103,26 @@ export function Sidebar({ onParse, isLoading, status, file1Data, file2Data }) {
             </tbody>
         </table>
     `;
-    // Set the table HTML to our state
+    // Set the table HTML to our local state
     setDetailsHTML(table);
   };
 
+  // --- Dynamic Class ---
+  // Determines if the "Age Comparison" section is grayed out
   const isAgeCompareEnabled = file1Data ? 'enabled' : '';
 
+  // --- JSX Render ---
   return (
     <aside className="sidebar">
       <header className="sidebar-header">
-        <h1>Insurlytics Demo</h1>
+        <h1>Policy Analyzer</h1>
+        {/* Sign Out Section */}
+        {user && (
+          <div className="user-info">
+            <p>{user.email}</p>
+            <button onClick={handleSignOut} className="sign-out-btn">Sign Out</button>
+          </div>
+        )}
       </header>
 
       {/* --- File Uploader --- */}
@@ -86,6 +133,7 @@ export function Sidebar({ onParse, isLoading, status, file1Data, file2Data }) {
             <label htmlFor="pdfFile1">File 1:</label>
             <input 
               type="file" id="pdfFile1" accept="application/pdf"
+              // When a file is selected, update the local 'file1' state
               onChange={(e) => setFile1(e.target.files[0])}
             />
           </div>
@@ -99,27 +147,28 @@ export function Sidebar({ onParse, isLoading, status, file1Data, file2Data }) {
           <button 
             id="compareBtn"
             onClick={handleParseClick}
-            disabled={isLoading}
-            className={isLoading ? 'loading' : ''}
+            disabled={isLoading} // Controlled by App.js
+            className={isLoading ? 'loading' : ''} // Controlled by App.js
           >
             {isLoading ? 'Parsing...' : 'Parse & Compare'}
           </button>
-          <div id="status">{status}</div>
+          <div id="status">{status}</div> {/* Controlled by App.js */}
         </div>
       </section>
 
       {/* --- Age Comparator --- */}
       <section className="sidebar-section">
         <h2>2. Compare Age</h2>
+        {/* This whole section is enabled/disabled based on app state */}
         <div className={`age-comparison ${isAgeCompareEnabled}`}>
           <p>Enter an age to see a detailed comparison.</p>
           <input 
             type="number" id="compareAge" placeholder="Enter Age"
-            value={compareAge}
+            value={compareAge} // Controlled by local state
             onChange={(e) => setCompareAge(e.target.value)}
           />
           <button id="compareAgeBtn" onClick={handleGetDetails}>Get Details</button>
-          {/* This renders the HTML table string we built */}
+          {/* Renders the HTML table from local state */}
           <div 
             id="comparisonDetails" 
             dangerouslySetInnerHTML={{ __html: detailsHTML }} 
@@ -127,22 +176,56 @@ export function Sidebar({ onParse, isLoading, status, file1Data, file2Data }) {
         </div>
       </section>
 
-      {/* --- Raw Data --- */}
+      {/* --- Raw Data Accordion --- */}
       <section className="sidebar-section">
         <h2>3. Raw Data</h2>
         <details className="details-accordion">
             <summary>Show/Hide Raw JSON</summary>
             <div className="raw-data-container">
+                
+                {/* File 1: Only renders if file1Data exists */}
                 {file1Data && (
                   <div className="raw-data-box">
-                      <h3>File 1</h3>
-                      <pre>{JSON.stringify(file1Data, null, 2)}</pre>
+                      <div className="raw-data-header">
+                        <h3>File 1</h3>
+                        <button 
+                          className="copy-btn" 
+                          onClick={() => handleCopy('file1')}
+                        >
+                          {copyStatus === 'file1' ? 'Copied!' : 'Copy'}
+                        </button>
+                      </div>
+                      <SyntaxHighlighter 
+                        language="json" 
+                        style={atomOneDark}
+                        customStyle={{ padding: '15px', borderRadius: '8px', fontSize: '13px' }}
+                        wrapLines={true}
+                      >
+                        {JSON.stringify(file1Data, null, 2)}
+                      </SyntaxHighlighter>
                   </div>
                 )}
+
+                {/* File 2: Only renders if file2Data exists */}
                 {file2Data && (
                   <div className="raw-data-box">
-                      <h3>File 2</h3>
-                      <pre>{JSON.stringify(file2Data, null, 2)}</pre>
+                      <div className="raw-data-header">
+                        <h3>File 2</h3>
+                        <button 
+                          className="copy-btn" 
+                          onClick={() => handleCopy('file2')}
+                        >
+                          {copyStatus === 'file2' ? 'Copied!' : 'Copy'}
+                        </button>
+                      </div>
+                      <SyntaxHighlighter 
+                        language="json" 
+                        style={atomOneDark}
+                        customStyle={{ padding: '15px', borderRadius: '8px', fontSize: '13px' }}
+                        wrapLines={true}
+                      >
+                        {JSON.stringify(file2Data, null, 2)}
+                      </SyntaxHighlighter>
                   </div>
                 )}
             </div>

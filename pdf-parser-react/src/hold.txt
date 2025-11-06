@@ -1,0 +1,48 @@
+ // --- Data-Parsing Logic ---
+  const handleParseFiles = async (file1, file2) => {
+    if (!file1 && !file2) {
+      setStatus("Please select at least one file.");
+      return;
+    }
+
+    // 1. Set the loading state
+    setIsLoading(true);
+    setStatus("Uploading and parsing... Please wait.");
+    setFile1Data(null);
+    setFile2Data(null);
+
+    const parseFile = async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch(`${API_URL}/parse`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(`Error parsing ${file.name}: ${err.error || response.statusText}`);
+      }
+      return response.json();
+    };
+
+    // 2. Try to parse files
+    try {
+      const promises = [];
+      if (file1) promises.push(parseFile(file1));
+      if (file2) promises.push(parseFile(file2));
+      
+      const results = await Promise.all(promises);
+
+      // 3. Set the data state
+      if (file1) setFile1Data(results.shift());
+      if (file2) setFile2Data(results.shift());
+      setStatus("Parse complete! Charts updated.");
+      
+    } catch (error) {
+      console.error("Error:", error);
+      setStatus(`An error occurred: ${error.message}`);
+    } finally {
+      // 4. Turn off loading state (no matter what)
+      setIsLoading(false);
+    }
+  };
