@@ -1,48 +1,41 @@
+# app.rb
 require 'sinatra'
 require 'json'
-require 'firebase/admin' # For Auth
+require 'google-id-token' # <-- This is the new, correct gem
 require_relative 'parser'
-
-# --- Firebase Admin Setup ---
-# !! Make sure you have your 'serviceAccountKey.json' file in this folder
-# !! Replace 'your-project-id' with your actual Firebase Project ID
-Firebase::Admin.configure do |config|
-  config.project_id = 'your-project-id' 
-  config.credentials = Firebase::Admin::Credentials
-    .from_service_account_json(File.join(__dir__, 'serviceAccountKey.json'))
-end
 
 # --- Authentication Middleware ---
 helpers do
   def protected!
     auth_header = request.env['HTTP_AUTHORIZATION']
-    return halt(401, 'No token provided') unless auth_header
+    return halt 401, { error: 'No token provided' }.to_json unless auth_header
 
     token = auth_header.split(' ').last
-    return halt(401, 'Invalid token') unless token
+    validator = GoogleIDToken::Validator.new
+    
+    # This is your correct Client ID that you found
+    aud = '334255668039-rm5o56jnk7t61lpol60ho7p70g182el0.apps.googleusercontent.com'
 
     begin
-      # Verify the token with Firebase
-      decoded_token = Firebase::Admin::Auth.verify_id_token(token)
-      @user_uid = decoded_token[:uid]
-    rescue => e
-      halt(401, "Token verification failed: #{e.message}")
+      # This checks the token against Google's servers
+      payload = validator.check(token, aud)
+      @user_uid = payload['sub'] # This is the user's Firebase UID
+    rescue GoogleIDToken::ValidationError => e
+      halt 401, { error: "Token verification failed: #{e.message}" }.to_json
     end
   end
 end
 
 # --- CORS Headers ---
 before do
-  # Allow requests from your React app
   allowed_origins = ['http://localhost:5000', 'http://localhost:3000']
-  
   origin = request.env['HTTP_ORIGIN']
   if allowed_origins.include?(origin)
      headers['Access-Control-Allow-Origin'] = origin
   end
-  
   headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-  headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization' # Add Authorization
+  # Make sure to allow the 'Authorization' header
+  headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
 end
 
 # Handle the browser's pre-flight "OPTIONS" request
@@ -52,7 +45,7 @@ end
 
 # --- Secure Parsing Endpoint ---
 post '/parse' do
-  protected! # This line ensures only logged-in users can run this
+  protected! # This line locks the route
   
   content_type :json
   
@@ -71,8 +64,6 @@ post '/parse' do
     halt(500, { error: "Error reading PDF: #{e.message}" }.to_json)
   end
   
-  # Run your parsing logic
   parsed_data = parse_illustration_text(text)
-  
   return parsed_data.to_json
 end

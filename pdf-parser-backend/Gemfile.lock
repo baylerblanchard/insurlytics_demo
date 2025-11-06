@@ -5,11 +5,16 @@ GEM
     afm (1.0.0)
     base64 (0.3.0)
     bigdecimal (3.3.1)
+    google-id-token (1.4.2)
+      jwt (>= 1)
     hashery (2.1.2)
-    json (2.15.1)
+    json (2.15.2)
+    jwt (2.10.2)
+      base64
     mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
-    nio4r (2.7.4)
+    nio4r (2.7.5)
+    ostruct (0.6.3)
     pdf-reader (2.15.0)
       Ascii85 (>= 1.0, < 3.0, != 2.0.0)
       afm (>= 0.2.1, < 2)
@@ -18,7 +23,7 @@ GEM
       ttfunk
     puma (6.6.1)
       nio4r (~> 2.0)
-    rack (2.2.20)
+    rack (2.2.21)
     rack-protection (3.2.0)
       base64 (>= 0.1.0)
       rack (~> 2.2, >= 2.2.4)
@@ -38,7 +43,9 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  google-id-token
   json (~> 2.7)
+  ostruct
   pdf-reader (~> 2.5)
   puma (~> 6.4)
   sinatra (~> 3.2)

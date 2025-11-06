@@ -1,27 +1,22 @@
+// src/App.js
 import React, { useState } from 'react';
 import './index.css';
 import { Sidebar } from './Sidebar';
 import { MainContent } from './MainContent';
 import { LoginPage } from './LoginPage';
 
-// Import hooks
 import { auth } from './firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
-// Your API URL
 const API_URL = "http://localhost:9292";
 
 function App() {
-  // --- State Management ---
   const [isLoading, setIsLoading] = useState(false);
   const [file1Data, setFile1Data] = useState(null);
   const [file2Data, setFile2Data] = useState(null);
   const [status, setStatus] = useState('');
-
-  // --- Firebase Auth Hook ---
   const [user, loading, error] = useAuthState(auth);
 
-  // --- Data Parsing Logic (The "Brain") ---
   const handleParseFiles = async (file1, file2) => {
     if (!file1 && !file2) {
       setStatus("Please select at least one file.");
@@ -33,19 +28,24 @@ function App() {
     setFile1Data(null);
     setFile2Data(null);
 
-    // This helper function includes the Auth Token
+    // This is the helper function that now contains the auth logic
     const parseFile = async (file) => {
-      if (!user) {
+      // 1. Get the current user from the auth state
+      if (!user) { 
         throw new Error('You must be logged in to parse files.');
       }
+      
+      // 2. Get their ID token (this is the new part)
       const token = await user.getIdToken();
 
       const formData = new FormData();
       formData.append('file', file);
       
+      // 3. Make the authenticated API call
       const response = await fetch(`${API_URL}/parse`, {
           method: 'POST',
           headers: {
+              // 4. Send the token in the Authorization header
               'Authorization': `Bearer ${token}` 
           },
           body: formData,
@@ -58,7 +58,7 @@ function App() {
       return response.json();
     };
 
-    // --- Run the parse ---
+    // --- This part remains the same ---
     try {
       const promises = [];
       if (file1) promises.push(parseFile(file1));
@@ -78,7 +78,7 @@ function App() {
     }
   };
 
-  // --- Main Router Logic ---
+  // --- This router logic remains the same ---
   if (loading) {
     return (
       <div style={{textAlign: 'center', marginTop: '100px', fontSize: '20px'}}>
@@ -91,7 +91,6 @@ function App() {
     return <div><p>Error: {error.message}</p></div>;
   }
   
-  // If User is LOGGED IN, show the dashboard
   if (user) {
     return (
       <div className="app-container">
@@ -111,7 +110,6 @@ function App() {
     );
   } 
   
-  // If User is LOGGED OUT, show the login page
   return <LoginPage />;
 }
 
