@@ -1,6 +1,7 @@
 # Gemfile
 source 'https://rubygems.org'
 
+gem 'firebase_id_token'
 gem 'google-id-token'
 gem 'json', '~> 2.7'
 gem 'pdf-reader', '~> 2.5'
