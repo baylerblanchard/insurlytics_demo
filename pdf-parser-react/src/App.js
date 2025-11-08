@@ -30,22 +30,26 @@ function App() {
 
     // This is the helper function that now contains the auth logic
     const parseFile = async (file) => {
-      // 1. Get the current user from the auth state
-      if (!user) { 
+      
+      // 1. Get the current user directly from the auth service
+      const currentUser = auth.currentUser; 
+
+      if (!currentUser) { 
         throw new Error('You must be logged in to parse files.');
       }
       
-      // 2. Get their ID token (this is the new part)
-      const token = await user.getIdToken();
+      // 2. Get their ID token and force a refresh
+      // By passing 'true', we guarantee we get a
+      // fresh, valid token from Google.
+      const token = await currentUser.getIdToken(true); 
 
       const formData = new FormData();
       formData.append('file', file);
       
-      // 3. Make the authenticated API call
+      // 3. Make the authenticated API call (this part is the same)
       const response = await fetch(`${API_URL}/parse`, {
           method: 'POST',
           headers: {
-              // 4. Send the token in the Authorization header
               'Authorization': `Bearer ${token}` 
           },
           body: formData,

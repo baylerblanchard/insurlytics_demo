@@ -14,7 +14,7 @@ helpers do
     validator = GoogleIDToken::Validator.new
     
     # This is your correct Client ID that you found
-    aud = '334255668039-rm5o56jnk7t61lpol60ho7p70g182el0.apps.googleusercontent.com'
+    aud = 'insurlytics-demo'
 
     begin
       # This checks the token against Google's servers
