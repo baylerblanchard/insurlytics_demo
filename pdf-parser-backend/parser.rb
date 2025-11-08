@@ -23,6 +23,7 @@ def parse_illustration_text(text)
       cumulative_premium += current_premium
       data[:yearly_data] << {
         age: age_str.to_i,
+        annual_premium: current_premium.round(2), # <-- CRITICAL NEW LINE
         cumulative_premium: cumulative_premium.round(2),
         net_cash_value: 0,
         net_death_benefit: death_benefit_str.delete(',').to_i
@@ -35,6 +36,7 @@ def parse_illustration_text(text)
         cumulative_premium += current_premium
         data[:yearly_data] << {
             age: age_str.to_i,
+            annual_premium: current_premium.round(2), # <-- CRITICAL NEW LINE
             cumulative_premium: cumulative_premium.round(2),
             net_cash_value: net_cash_value_str.delete(',').to_i,
             net_death_benefit: net_death_benefit_str.delete(',').to_i

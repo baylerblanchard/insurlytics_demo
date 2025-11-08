@@ -42,6 +42,8 @@ GEM
     logger (1.7.0)
     mini_mime (1.1.5)
     minitest (5.26.0)
+    mock_redis (0.53.0)
+      redis (~> 5)
     multi_xml (0.7.2)
       bigdecimal (~> 3.1)
     mustermann (3.0.4)
@@ -88,9 +90,11 @@ DEPENDENCIES
   firebase_id_token
   google-id-token
   json (~> 2.7)
+  mock_redis
   ostruct
   pdf-reader (~> 2.5)
   puma (~> 6.4)
+  redis
   sinatra (~> 3.2)
 
 BUNDLED WITH

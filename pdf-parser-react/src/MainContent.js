@@ -1,109 +1,84 @@
 import React, { useState, useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
-  LineElement, 
-  PointElement, 
-  Title, 
-  Tooltip, 
-  Legend 
+  Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement 
 } from 'chart.js';
 
-// We have to "register" the parts of Chart.js we're using
-ChartJS.register(
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
-  LineElement, 
-  PointElement, 
-  Title, 
-  Tooltip, 
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement);
 
 // --- HELPER FUNCTIONS ---
 const getCombinedLabels = (data1, data2) => {
-    const ages1 = data1.yearly_data.map(item => item.age);
-    const ages2 = data2 ? data2.yearly_data.map(item => item.age) : []; 
+    const ages1 = data1.yearly_data.map(item => Number(item.age));
+    const ages2 = data2 ? data2.yearly_data.map(item => Number(item.age)) : []; 
     const allAges = [...new Set([...ages1, ...ages2])]; 
     return allAges.sort((a, b) => a - b);
 };
 
-const mapDataToLabels = (labels, data) => {
-    const dataMap = new Map(data.map(item => [item.age, item]));
+// THIS IS THE KEY NEW FUNCTION
+// It grabs raw data fields directly from your new JSON
+const mapDataField = (labels, data, field) => {
+    const dataMap = new Map(data.map(item => [Number(item.age), item[field]]));
     return labels.map(age => dataMap.get(age) || null); 
 };
-
-const calculateAnnualData = (yearlyData) => {
-    let annualPremiums = [];
-    let annualGrowth = [];
-    for (let i = 0; i < yearlyData.length; i++) {
-        const curr = yearlyData[i];
-        if (!curr) { // Handle nulls (gaps in data)
-          annualPremiums.push(null);
-          annualGrowth.push(null);
-          continue;
-        }
-        const prev = i > 0 ? yearlyData[i - 1] : null;
-        
-        const prevPremium = prev ? prev.cumulative_premium : 0;
-        const prevGrowth = prev ? prev.net_cash_value : 0;
-        
-        annualPremiums.push(curr.cumulative_premium - prevPremium);
-        annualGrowth.push(curr.net_cash_value - prevGrowth);
-    }
-    return { annualPremiums, annualGrowth };
-};
-// --- END OF HELPERS ---
-
+// ------------------------
 
 export function MainContent({ file1Data, file2Data }) {
   const [activeTab, setActiveTab] = useState('annual');
 
-  // useMemo hook calculates chart data only when file data changes
   const { annualData, comboData } = useMemo(() => {
     if (!file1Data) return { annualData: null, comboData: null };
     
     const labels = getCombinedLabels(file1Data, file2Data);
     
-    // --- 1. Calculate Annual Performance Data ---
-    const data1Map = new Map(file1Data.yearly_data.map(item => [item.age, item]));
-    const fullData1 = labels.map(age => data1Map.get(age) || null);
-    const { annualPremiums: annualPremiums1, annualGrowth: annualGrowth1 } = calculateAnnualData(fullData1);
+    // --- 1. ANNUAL PERFORMANCE DATA ---
+    // We now use mapDataField to grab 'annual_premium' directly.
+    // No more complex calculations here!
+    const annualPrem1 = mapDataField(labels, file1Data.yearly_data, 'annual_premium');
     
+    // For Annual Growth, we still calculate it as the change in Net Cash Value
+    const annualGrowth1 = labels.map((age) => {
+       const curr = file1Data.yearly_data.find(d => Number(d.age) === age);
+       const prev = file1Data.yearly_data.find(d => Number(d.age) === (age - 1));
+       if (!curr) return null;
+       return curr.net_cash_value - (prev ? prev.net_cash_value : 0);
+    });
+
     let annualDatasets = [
-        { label: 'File 1 - Annual Premium', data: annualPremiums1, borderColor: 'red', backgroundColor: 'rgba(255, 99, 132, 0.6)', type: 'bar' },
+        { label: 'File 1 - Annual Premium', data: annualPrem1, borderColor: 'red', backgroundColor: 'rgba(255, 99, 132, 0.6)', type: 'bar' },
         { label: 'File 1 - Annual CV Growth', data: annualGrowth1, borderColor: 'blue', backgroundColor: 'blue', fill: false, type: 'line', tension: 0.1 }
     ];
 
     if (file2Data) {
-        const data2Map = new Map(file2Data.yearly_data.map(item => [item.age, item]));
-        const fullData2 = labels.map(age => data2Map.get(age) || null);
-        const { annualPremiums: annualPremiums2, annualGrowth: annualGrowth2 } = calculateAnnualData(fullData2);
+        const annualPrem2 = mapDataField(labels, file2Data.yearly_data, 'annual_premium');
+        const annualGrowth2 = labels.map((age) => {
+           const curr = file2Data.yearly_data.find(d => Number(d.age) === age);
+           const prev = file2Data.yearly_data.find(d => Number(d.age) === (age - 1));
+           if (!curr) return null;
+           return curr.net_cash_value - (prev ? prev.net_cash_value : 0);
+        });
+
         annualDatasets.push(
-            { label: 'File 2 - Annual Premium', data: annualPremiums2, borderColor: 'orange', backgroundColor: 'rgba(255, 159, 64, 0.6)', type: 'bar' },
+            { label: 'File 2 - Annual Premium', data: annualPrem2, borderColor: 'orange', backgroundColor: 'rgba(255, 159, 64, 0.6)', type: 'bar' },
             { label: 'File 2 - Annual CV Growth', data: annualGrowth2, borderColor: 'cyan', backgroundColor: 'cyan', fill: false, type: 'line', tension: 0.1 }
         );
     }
 
-    // --- 2. Calculate Combo (Cumulative) Chart Data ---
-    const premiumData1 = mapDataToLabels(labels, file1Data.yearly_data).map(item => item ? item.cumulative_premium : null);
-    const cashValueData1 = mapDataToLabels(labels, file1Data.yearly_data).map(item => item ? item.net_cash_value : null);
+    // --- 2. CUMULATIVE (COMBO) DATA ---
+    // We also use mapDataField here for cleaner code
+    const cumulativePrem1 = mapDataField(labels, file1Data.yearly_data, 'cumulative_premium');
+    const cashValue1 = mapDataField(labels, file1Data.yearly_data, 'net_cash_value');
 
     let comboDatasets = [
-        { label: 'File 1 - Cash Value', data: cashValueData1, borderColor: 'blue', backgroundColor: 'blue', fill: false, type: 'line', tension: 0.1 },
-        { label: 'File 1 - Premium', data: premiumData1, borderColor: 'red', backgroundColor: 'rgba(255, 99, 132, 0.6)' }
+        { label: 'File 1 - Cash Value', data: cashValue1, borderColor: 'blue', backgroundColor: 'blue', fill: false, type: 'line', tension: 0.1 },
+        { label: 'File 1 - Cumulative Premium', data: cumulativePrem1, borderColor: 'red', backgroundColor: 'rgba(255, 99, 132, 0.6)', type: 'bar' }
     ];
 
     if (file2Data) {
-        const premiumData2 = mapDataToLabels(labels, file2Data.yearly_data).map(item => item ? item.cumulative_premium : null);
-        const cashValueData2 = mapDataToLabels(labels, file2Data.yearly_data).map(item => item ? item.net_cash_value : null);
+        const cumulativePrem2 = mapDataField(labels, file2Data.yearly_data, 'cumulative_premium');
+        const cashValue2 = mapDataField(labels, file2Data.yearly_data, 'net_cash_value');
         comboDatasets.push(
-            { label: 'File 2 - Cash Value', data: cashValueData2, borderColor: 'cyan', backgroundColor: 'cyan', fill: false, type: 'line', tension: 0.1 },
-            { label: 'File 2 - Premium', data: premiumData2, borderColor: 'orange', backgroundColor: 'rgba(255, 159, 64, 0.6)' }
+            { label: 'File 2 - Cash Value', data: cashValue2, borderColor: 'cyan', backgroundColor: 'cyan', fill: false, type: 'line', tension: 0.1 },
+            { label: 'File 2 - Cumulative Premium', data: cumulativePrem2, borderColor: 'orange', backgroundColor: 'rgba(255, 159, 64, 0.6)', type: 'bar' }
         );
     }
     
@@ -112,9 +87,8 @@ export function MainContent({ file1Data, file2Data }) {
       comboData: { labels, datasets: comboDatasets }
     };
 
-  }, [file1Data, file2Data]); // Dependency array
+  }, [file1Data, file2Data]);
 
-  // --- Render Logic ---
   if (!file1Data) {
     return (
       <main className="main-content">
@@ -126,52 +100,26 @@ export function MainContent({ file1Data, file2Data }) {
     );
   }
 
-  // Chart.js options
   const chartOptions = (title) => ({
-      responsive: true, 
+      responsive: true, maintainAspectRatio: false,
       plugins: { 
           title: { display: true, text: title, font: { size: 16 } }, 
           tooltip: { mode: 'index', intersect: false }
       }, 
-      scales: { 
-          x: { title: { display: true, text: 'Age' }}, 
-          y: { title: { display: true, text: 'Value ($)' }}
-      },
-      animation: {
-          duration: 800,
-          easing: 'easeOutQuart',
-      }
+      scales: { x: { title: { display: true, text: 'Age' }}, y: { title: { display: true, text: 'Value ($)' }}}
   });
 
   return (
     <main className="main-content">
       <nav className="chart-tabs">
-        <button 
-          className={`tab-link ${activeTab === 'annual' ? 'active' : ''}`}
-          onClick={() => setActiveTab('annual')}
-        >
-          Annual Performance
-        </button>
-        <button 
-          className={`tab-link ${activeTab === 'combo' ? 'active' : ''}`}
-          onClick={() => setActiveTab('combo')}
-        >
-          Cumulative Value
-        </button>
+        <button className={`tab-link ${activeTab === 'annual' ? 'active' : ''}`} onClick={() => setActiveTab('annual')}>Annual Performance</button>
+        <button className={`tab-link ${activeTab === 'combo' ? 'active' : ''}`} onClick={() => setActiveTab('combo')}>Cumulative Value</button>
       </nav>
-
-      <div className={`tab-content ${activeTab === 'annual' ? 'active' : ''}`}>
-        <Bar 
-          data={annualData} 
-          options={chartOptions(file2Data ? 'Annual Performance (Side-by-Side)' : 'Annual Performance (File 1)')}
-        />
+      <div className={`tab-content ${activeTab === 'annual' ? 'active' : ''}`} style={{ height: '500px' }}>
+        <Bar data={annualData} options={chartOptions('Annual Performance (Premium vs Growth)')} />
       </div>
-
-      <div className={`tab-content ${activeTab === 'combo' ? 'active' : ''}`}>
-        <Bar 
-          data={comboData} 
-          options={chartOptions(file2Data ? 'Cumulative Value vs. Premium (Side-by-Side)' : 'Cumulative Value vs. Premium (File 1)')}
-        />
+      <div className={`tab-content ${activeTab === 'combo' ? 'active' : ''}`} style={{ height: '500px' }}>
+        <Bar data={comboData} options={chartOptions('Cumulative Value vs. Total Paid')} />
       </div>
     </main>
   );

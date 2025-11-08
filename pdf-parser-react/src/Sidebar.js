@@ -25,6 +25,16 @@ const format = (val) => val === null || val === undefined ? 'N/A' : `$${val.toLo
 // --- End of Helpers ---
 
 
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      // Force a page reload to clear all React state
+      window.location.reload(); 
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
 export function Sidebar({ 
   user, 
   onParse, 
