@@ -12,14 +12,15 @@ helpers do
 
     token = auth_header.split(' ').last
     validator = GoogleIDToken::Validator.new
-    
-    # This is your correct Client ID that you found
-    aud = 'insurlytics-demo'
+
+    # --- THE FIX IS HERE ---
+    # Use your Project ID, exactly as shown in the debug output "aud" field
+    aud = 'insurlytics-demo' 
+    # -----------------------
 
     begin
-      # This checks the token against Google's servers
       payload = validator.check(token, aud)
-      @user_uid = payload['sub'] # This is the user's Firebase UID
+      @user_uid = payload['sub']
     rescue GoogleIDToken::ValidationError => e
       halt 401, { error: "Token verification failed: #{e.message}" }.to_json
     end
