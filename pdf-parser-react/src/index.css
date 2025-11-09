@@ -147,10 +147,23 @@ button:hover {
     border-bottom: 3px solid transparent;
     margin-bottom: -2px; /* Pulls tab border over the main border */
 }
+.tab-link:not(.active):hover {
+    color: white;
+    background-color: var(--primary-blue);
+    border-bottom-color: var(--primary-blue);
+}
+
+/* Optional: A subtle effect when hovering the ALREADY active tab */
+.tab-link.active:hover {
+    color: white; /* Just make the text slightly darker blue */
+    cursor: default;
+}
+
 .tab-link.active {
     color: var(--primary-blue);
     border-bottom-color: var(--primary-blue);
 }
+
 
 /* 8. Chart & Data Containers */
 .chartContainer {
