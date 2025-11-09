@@ -277,3 +277,156 @@ button.loading::after {
 .sign-out-btn:hover {
   background-color: #555;
 }
+
+/* --- MODERN LOGIN PAGE STYLES --- */
+
+.login-page-bg {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f2f5; /* Softer background */
+}
+
+.login-card {
+    background: white;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); /* Deep, modern shadow */
+    text-align: center;
+}
+
+.login-title {
+    margin: 0;
+    font-size: 26px;
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+.login-subtitle {
+    margin-top: 8px;
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+/* Google Button */
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: white;
+    border: 1px solid #dadce0;
+    color: #3c4043;
+    font-weight: 500;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.google-btn:hover {
+    background-color: #f8faff;
+    border-color: #d2e3fc;
+}
+.google-btn img {
+    width: 20px;
+    margin-right: 12px;
+}
+
+/* Divider */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    margin: 25px 0;
+    color: #888;
+    font-size: 14px;
+}
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #e0e0e0;
+}
+.auth-divider span {
+    padding: 0 10px;
+}
+
+/* Form Styles */
+.auth-form {
+    text-align: left;
+}
+.input-group {
+    margin-bottom: 15px;
+}
+.input-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #444;
+    font-size: 14px;
+    font-weight: 600;
+}
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+    box-sizing: border-box; /* Fixes padding width issues */
+}
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+.primary-btn {
+    width: 100%;
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 10px;
+    border: none;
+}
+.primary-btn:hover {
+    background-color: var(--primary-blue-dark);
+}
+.primary-btn:disabled {
+    background-color: #9cbfff;
+    cursor: not-allowed;
+}
+
+/* Error & Toggles */
+.auth-error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.auth-toggle {
+    margin-top: 25px;
+    color: #666;
+    font-size: 15px;
+}
+.toggle-link {
+    background: none;
+    border: none;
+    color: var(--primary-blue);
+    font-weight: 600;
+    padding: 0;
+    margin-left: 5px;
+    width: auto;
+    cursor: pointer;
+    font-size: 15px;
+}
+.toggle-link:hover {
+    text-decoration: underline;
+}
