@@ -3,7 +3,8 @@ import { auth, googleProvider } from './firebase';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  signInWithPopup
+  signInWithPopup,
+  fetchSignInMethodsForEmail
 } from "firebase/auth";
 
 export function LoginPage() {
@@ -17,10 +18,11 @@ export function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError('');
     try {
-        await signInWithPopup(auth, googleProvider);
-        // No need to redirect manually; App.js detects the auth change automatically.
+      await signInWithPopup(auth, googleProvider);
+      // No need to redirect manually; App.js detects auth state change.
     } catch (err) {
-        setError(err.message);
+      console.error("Google sign-in error:", err);
+      setError("Google sign-in failed. Please try again.");
     }
   };
 
@@ -29,34 +31,52 @@ export function LoginPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
     try {
       if (isSignUp) {
+        // --- SIGN UP ---
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
+        // --- SIGN IN ---
+
+        // 1️⃣ Check if email exists first
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods.length === 0) {
+          setError("No account found with that email. Please sign up first.");
+          setIsLoading(false);
+          return;
+        }
+
+        // 2️⃣ Proceed with login
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (err) {
-      // Simplify Firebase error messages for the user
+      // 3️⃣ Friendly error messages for known Firebase codes
       if (err.code === 'auth/invalid-credential') {
         setError("Incorrect email or password.");
+      } else if (err.code === 'auth/user-not-found') {
+        setError("No account found with that email. Please sign up first.");
       } else if (err.code === 'auth/email-already-in-use') {
         setError("An account with this email already exists.");
       } else if (err.code === 'auth/weak-password') {
         setError("Password should be at least 6 characters.");
+      } else if (err.code === 'auth/invalid-email') {
+        setError("Please enter a valid email address.");
       } else {
-        setError(err.message);
+        console.error("Unhandled auth error:", err);
+        setError("An unexpected error occurred. Please try again.");
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- RENDER ---
+  // --- 3. RENDER ---
   return (
     <div className="login-page-bg">
       <div className="login-card">
         <h1 className="login-title">
-            {isSignUp ? 'Create Account' : 'Welcome Back'}
+          {isSignUp ? 'Create Account' : 'Welcome Back'}
         </h1>
         <p className="login-subtitle">Policy Analyzer Dashboard</p>
 
@@ -70,7 +90,7 @@ export function LoginPage() {
         </button>
 
         <div className="auth-divider">
-            <span>or continue with email</span>
+          <span>or continue with email</span>
         </div>
 
         {/* EMAIL FORM */}
@@ -85,6 +105,7 @@ export function LoginPage() {
               required
             />
           </div>
+
           <div className="input-group">
             <label>Password</label>
             <input 
@@ -96,6 +117,7 @@ export function LoginPage() {
             />
           </div>
 
+          {/* ERROR MESSAGE */}
           {error && <div className="auth-error">{error}</div>}
 
           <button 
@@ -109,14 +131,16 @@ export function LoginPage() {
 
         {/* TOGGLE LINK */}
         <p className="auth-toggle">
-            {isSignUp ? "Already have an account?" : "Don't have an account yet?"}
-            {' '}
-            <button 
-                className="toggle-link" 
-                onClick={() => setIsSignUp(!isSignUp)}
-            >
-                {isSignUp ? 'Sign In' : 'Sign Up'}
-            </button>
+          {isSignUp ? "Already have an account?" : "Don't have an account yet?"}{' '}
+          <button 
+            className="toggle-link" 
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setError('');
+            }}
+          >
+            {isSignUp ? 'Sign In' : 'Sign Up'}
+          </button>
         </p>
       </div>
     </div>
