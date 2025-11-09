@@ -1,5 +1,4 @@
-// src/App.js
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './index.css';
 import { Sidebar } from './Sidebar';
 import { MainContent } from './MainContent';
@@ -7,16 +6,49 @@ import { LoginPage } from './LoginPage';
 
 import { auth } from './firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { signOut } from "firebase/auth";
 
+// Your API URL
 const API_URL = "http://localhost:9292";
 
+// Auto-logout timer (e.g., 15 minutes = 15 * 60 * 1000)
+const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
+
 function App() {
+  // --- State Management ---
   const [isLoading, setIsLoading] = useState(false);
   const [file1Data, setFile1Data] = useState(null);
   const [file2Data, setFile2Data] = useState(null);
   const [status, setStatus] = useState('');
   const [user, loading, error] = useAuthState(auth);
 
+  // --- AUTO-LOGOUT LOGIC ---
+  const handleLogout = useCallback(() => {
+      signOut(auth).then(() => {
+        window.location.reload();
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    let timeoutId;
+    const resetTimer = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleLogout, INACTIVITY_TIMEOUT);
+    };
+
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(event => document.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      events.forEach(event => document.removeEventListener(event, resetTimer));
+    };
+  }, [user, handleLogout]);
+
+  // --- DATA PARSING LOGIC (Restored) ---
   const handleParseFiles = async (file1, file2) => {
     if (!file1 && !file2) {
       setStatus("Please select at least one file.");
@@ -28,25 +60,17 @@ function App() {
     setFile1Data(null);
     setFile2Data(null);
 
-    // This is the helper function that now contains the auth logic
     const parseFile = async (file) => {
-      
-      // 1. Get the current user directly from the auth service
-      const currentUser = auth.currentUser; 
-
-      if (!currentUser) { 
+      if (!user) { 
         throw new Error('You must be logged in to parse files.');
       }
       
-      // 2. Get their ID token and force a refresh
-      // By passing 'true', we guarantee we get a
-      // fresh, valid token from Google.
-      const token = await currentUser.getIdToken(true); 
+      // Force a token refresh to ensure it's valid
+      const token = await user.getIdToken(true);
 
       const formData = new FormData();
       formData.append('file', file);
       
-      // 3. Make the authenticated API call (this part is the same)
       const response = await fetch(`${API_URL}/parse`, {
           method: 'POST',
           headers: {
@@ -62,7 +86,6 @@ function App() {
       return response.json();
     };
 
-    // --- This part remains the same ---
     try {
       const promises = [];
       if (file1) promises.push(parseFile(file1));
@@ -82,7 +105,7 @@ function App() {
     }
   };
 
-  // --- This router logic remains the same ---
+  // --- MAIN ROUTER LOGIC ---
   if (loading) {
     return (
       <div style={{textAlign: 'center', marginTop: '100px', fontSize: '20px'}}>

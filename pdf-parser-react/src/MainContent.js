@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Line } from 'react-chartjs-2'; // Import Line as well
 import { 
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement 
 } from 'chart.js';
@@ -14,8 +14,6 @@ const getCombinedLabels = (data1, data2) => {
     return allAges.sort((a, b) => a - b);
 };
 
-// THIS IS THE KEY NEW FUNCTION
-// It grabs raw data fields directly from your new JSON
 const mapDataField = (labels, data, field) => {
     const dataMap = new Map(data.map(item => [Number(item.age), item[field]]));
     return labels.map(age => dataMap.get(age) || null); 
@@ -30,12 +28,8 @@ export function MainContent({ file1Data, file2Data }) {
     
     const labels = getCombinedLabels(file1Data, file2Data);
     
-    // --- 1. ANNUAL PERFORMANCE DATA ---
-    // We now use mapDataField to grab 'annual_premium' directly.
-    // No more complex calculations here!
+    // --- 1. ANNUAL PERFORMANCE DATA (Keeps Bars for Premium) ---
     const annualPrem1 = mapDataField(labels, file1Data.yearly_data, 'annual_premium');
-    
-    // For Annual Growth, we still calculate it as the change in Net Cash Value
     const annualGrowth1 = labels.map((age) => {
        const curr = file1Data.yearly_data.find(d => Number(d.age) === age);
        const prev = file1Data.yearly_data.find(d => Number(d.age) === (age - 1));
@@ -63,22 +57,29 @@ export function MainContent({ file1Data, file2Data }) {
         );
     }
 
-    // --- 2. CUMULATIVE (COMBO) DATA ---
-    // We also use mapDataField here for cleaner code
+    // --- 2. CUMULATIVE DATA (NOW ALL LINES) ---
     const cumulativePrem1 = mapDataField(labels, file1Data.yearly_data, 'cumulative_premium');
     const cashValue1 = mapDataField(labels, file1Data.yearly_data, 'net_cash_value');
+    // Added Net Death Benefit to match your screenshot
+    const deathBenefit1 = mapDataField(labels, file1Data.yearly_data, 'net_death_benefit');
 
     let comboDatasets = [
-        { label: 'File 1 - Cash Value', data: cashValue1, borderColor: 'blue', backgroundColor: 'blue', fill: false, type: 'line', tension: 0.1 },
-        { label: 'File 1 - Cumulative Premium', data: cumulativePrem1, borderColor: 'red', backgroundColor: 'rgba(255, 99, 132, 0.6)', type: 'bar' }
+        { label: 'File 1 - Net Cash Value', data: cashValue1, borderColor: 'blue', backgroundColor: 'blue', fill: false, type: 'line', tension: 0.1 },
+        { label: 'File 1 - Net Death Benefit', data: deathBenefit1, borderColor: 'green', backgroundColor: 'green', fill: false, type: 'line', tension: 0.1 },
+        // CHANGED: type is now 'line'
+        { label: 'File 1 - Cumulative Premium', data: cumulativePrem1, borderColor: 'red', backgroundColor: 'red', fill: false, type: 'line', tension: 0.1 }
     ];
 
     if (file2Data) {
         const cumulativePrem2 = mapDataField(labels, file2Data.yearly_data, 'cumulative_premium');
         const cashValue2 = mapDataField(labels, file2Data.yearly_data, 'net_cash_value');
+        const deathBenefit2 = mapDataField(labels, file2Data.yearly_data, 'net_death_benefit');
+
         comboDatasets.push(
-            { label: 'File 2 - Cash Value', data: cashValue2, borderColor: 'cyan', backgroundColor: 'cyan', fill: false, type: 'line', tension: 0.1 },
-            { label: 'File 2 - Cumulative Premium', data: cumulativePrem2, borderColor: 'orange', backgroundColor: 'rgba(255, 159, 64, 0.6)', type: 'bar' }
+            { label: 'File 2 - Net Cash Value', data: cashValue2, borderColor: 'cyan', backgroundColor: 'cyan', fill: false, type: 'line', tension: 0.1 },
+            { label: 'File 2 - Net Death Benefit', data: deathBenefit2, borderColor: 'lime', backgroundColor: 'lime', fill: false, type: 'line', tension: 0.1 },
+            // CHANGED: type is now 'line'
+            { label: 'File 2 - Cumulative Premium', data: cumulativePrem2, borderColor: 'orange', backgroundColor: 'orange', fill: false, type: 'line', tension: 0.1 }
         );
     }
     
@@ -115,11 +116,15 @@ export function MainContent({ file1Data, file2Data }) {
         <button className={`tab-link ${activeTab === 'annual' ? 'active' : ''}`} onClick={() => setActiveTab('annual')}>Annual Performance</button>
         <button className={`tab-link ${activeTab === 'combo' ? 'active' : ''}`} onClick={() => setActiveTab('combo')}>Cumulative Value</button>
       </nav>
+      
+      {/* Annual Chart (Stays as a Bar Chart base) */}
       <div className={`tab-content ${activeTab === 'annual' ? 'active' : ''}`} style={{ height: '500px' }}>
         <Bar data={annualData} options={chartOptions('Annual Performance (Premium vs Growth)')} />
       </div>
+
+      {/* Cumulative Chart (Now a Line Chart base) */}
       <div className={`tab-content ${activeTab === 'combo' ? 'active' : ''}`} style={{ height: '500px' }}>
-        <Bar data={comboData} options={chartOptions('Cumulative Value vs. Total Paid')} />
+        <Line data={comboData} options={chartOptions('Cumulative Value vs. Total Paid')} />
       </div>
     </main>
   );
