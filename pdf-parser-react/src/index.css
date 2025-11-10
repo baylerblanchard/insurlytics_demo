@@ -133,35 +133,40 @@ button:hover {
 /* 7. Tab Navigation */
 .chart-tabs {
     display: flex;
-    border-bottom: 2px solid var(--border-color);
-    margin-bottom: 20px;
+    /* Remove the bottom border from the container, 
+       the tabs themselves will create the line now */
+    /* border-bottom: 2px solid var(--border-color); */
+    margin-bottom: 0; /* Remove margin so they sit flush with the chart */
 }
+
 .tab-link {
-    background: none;
+    background-color: #e9ecef; /* Light grey for inactive tabs */
     border: none;
-    padding: 15px 20px;
+    padding: 15px 30px;        /* Wider padding for a better look */
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    color: #555;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px; /* Pulls tab border over the main border */
+    color: #666;               /* Darker grey text */
+    margin-right: 4px;         /* Tiny gap between tabs */
+    
+    /* Rounded top corners only */
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    transition: all 0.2s ease-in-out;
 }
+
+/* Hover state for inactive tabs */
 .tab-link:not(.active):hover {
-    color: white;
-    background-color: var(--primary-blue);
-    border-bottom-color: var(--primary-blue);
+    background-color: #dde2e6; /* Slightly darker grey on hover */
+    color: #333;
 }
 
-/* Optional: A subtle effect when hovering the ALREADY active tab */
-.tab-link.active:hover {
-    color: white; /* Just make the text slightly darker blue */
-    cursor: default;
-}
-
+/* Active tab style */
 .tab-link.active {
-    color: var(--primary-blue);
-    border-bottom-color: var(--primary-blue);
+    background-color: var(--primary-blue); /* Solid blue when active */
+    color: white;                          /* White text when active */
+    /* Optional: add a slight shadow to make it "pop" forward */
+    box-shadow: 0 -2px 10px rgba(0, 123, 255, 0.2);
 }
 
 
