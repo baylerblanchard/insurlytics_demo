@@ -75,9 +75,4 @@ This terminal will run your React development server.
     npm start
     ```
     *Your browser should automatically open to `http://localhost:3000`.*
-
-    I need to remove some of these files that are not needed anymore.
-
-### 3. You're All Set!
-
 You can now use the application in your browser. The React app (`localhost:3000`) will send requests to the Ruby server (`localhost:9292`) when you upload a file.
