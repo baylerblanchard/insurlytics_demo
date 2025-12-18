@@ -42,6 +42,18 @@ def parse_illustration_text(text)
             net_death_benefit: net_death_benefit_str.delete(',').to_i
         }
     end
+  # elsif text.match?(/New York Life/i)
+    # Add specific parsing logic for New York Life here.
+    # You will need to inspect the raw 'text' to find the unique regex pattern
+    # for their data table rows.
+    #
+    # detail_text.scan(/YOUR_REGEX_HERE/).each do |match|
+    #   ...
+    # end
+  else
+    # Optional: Log or handle unknown formats
+    puts "Warning: Unknown document format. Could not parse yearly data."
+    puts "Snippet: #{text[0..200].gsub("\n", " ")}..."
   end
 
   return data
