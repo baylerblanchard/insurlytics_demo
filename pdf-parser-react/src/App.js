@@ -14,6 +14,33 @@ const API_URL = "http://localhost:9292";
 // Auto-logout timer (e.g., 15 minutes = 15 * 60 * 1000)
 const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
 
+// This helper function is moved outside of the component to prevent
+// it from being recreated on every render. It now accepts the `user`
+// object to handle authentication.
+const parseFile = async (file, user, apiUrl) => {
+  if (!user) {
+    throw new Error('You must be logged in to parse files.');
+  }
+
+  // Force a token refresh to ensure it's valid
+  const token = await user.getIdToken(true);
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${apiUrl}/parse`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(`Error parsing ${file.name}: ${err.error || response.statusText}`);
+  }
+  return response.json();
+};
+
 function App() {
   // --- State Management ---
   const [isLoading, setIsLoading] = useState(false);
@@ -60,41 +87,22 @@ function App() {
     setFile1Data(null);
     setFile2Data(null);
 
-    const parseFile = async (file) => {
-      if (!user) { 
-        throw new Error('You must be logged in to parse files.');
-      }
-      
-      // Force a token refresh to ensure it's valid
-      const token = await user.getIdToken(true);
-
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const response = await fetch(`${API_URL}/parse`, {
-          method: 'POST',
-          headers: {
-              'Authorization': `Bearer ${token}` 
-          },
-          body: formData,
-      });
-
-      if (!response.ok) {
-          const err = await response.json();
-          throw new Error(`Error parsing ${file.name}: ${err.error || response.statusText}`);
-      }
-      return response.json();
-    };
-
     try {
-      const promises = [];
-      if (file1) promises.push(parseFile(file1));
-      if (file2) promises.push(parseFile(file2));
-      
-      const results = await Promise.all(promises);
+      // This Promise.all structure is more robust and scales better
+      // if you were to add more file inputs in the future.
+      const [result1, result2] = await Promise.all([
+        file1 ? parseFile(file1, user, API_URL) : Promise.resolve(null),
+        file2 ? parseFile(file2, user, API_URL) : Promise.resolve(null),
+      ]);
 
-      if (file1) setFile1Data(results.shift());
-      if (file2) setFile2Data(results.shift());
+      // This logic is cleaner and less error-prone than using .shift()
+      if (result1) {
+        setFile1Data(result1);
+      }
+      if (result2) {
+        setFile2Data(result2);
+      }
+
       setStatus("Parse complete! Charts updated.");
       
     } catch (error) {
